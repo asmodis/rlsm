@@ -89,7 +89,7 @@ SQL
     
     private
     def initialize
-      db_name = File.join(File.dirname(__FILE__), '..', 'data', 'monoids.db')
+      db_name = File.join(File.dirname(__FILE__), 'data', 'monoids.db')
       @db = SQLite3::Database.open(db_name)
     end
 
