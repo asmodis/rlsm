@@ -28,7 +28,7 @@
 
 require File.join(File.dirname(__FILE__), 'monkey_patching')
 require File.join(File.dirname(__FILE__), 'monoid')
-require File.join(File.dirname(__FILE__), 'rlsm_regexp')
+require File.join(File.dirname(__FILE__), 'regexp')
 
 module RLSM
   class DFA
