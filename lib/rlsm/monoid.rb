@@ -36,7 +36,7 @@ class Monoid
   def initialize(table, options = {})
     options[:normalize] = true if options[:normalize].nil?
 
-    _create_binary_operation(table)
+    _create_binary_operation(table, options[:names])
     _check_form_of_binary_operation
     _check_associativity_of_binary_operation
 
@@ -463,7 +463,7 @@ class Monoid
     res.sort
   end
 
-  def _create_binary_operation(table)
+  def _create_binary_operation(table, names)
     if table.instance_of? Array
       @order = table.size
       @bo = table
@@ -485,7 +485,14 @@ class Monoid
     end
 
     #Convert to internal represenation
-    @names = @bo.flatten.uniq.clone
+    #Names given?
+    if names and names.class == Array and names.size == @order
+      @names = names
+    else
+      #Make a guess, works if convention is followed.
+      @names = @bo.flatten.uniq.clone
+    end
+
     @bo = (@bo.flatten.map { |e| @names.index(e) })/@order
   end
 
