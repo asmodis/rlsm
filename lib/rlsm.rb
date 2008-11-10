@@ -35,5 +35,5 @@ require "mgen"
 require "monoid_db"
 
 module RLSM
-  VERSION = "0.2.2"
+  VERSION = "0.2.3"
 end
