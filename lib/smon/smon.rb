@@ -27,9 +27,7 @@ class Smon
     @cmd_abbrev = Commands.abbrev
 
     #Setting up readline
-    Readline.completion_proc do |str|
-      @cmd_abbrev[str]
-    end
+    Readline.completion_proc = lambda { |str| @cmd_abbrev[str] }
 
     loop do
       begin
