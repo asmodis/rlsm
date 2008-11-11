@@ -12,6 +12,8 @@ lib/rlsm/monkey_patching.rb
 lib/rlsm/monoid.rb
 lib/rlsm/monoid_db.rb
 lib/rlsm/regexp.rb
+lib/smon/commands/db_find.rb
+lib/smon/commands/db_stat.rb
 lib/smon/commands/exit.rb
 lib/smon/commands/help.rb
 lib/smon/commands/intro.rb
@@ -21,4 +23,6 @@ lib/smon/commands/regexp.rb
 lib/smon/commands/reload.rb
 lib/smon/commands/show.rb
 lib/smon/smon.rb
-test/test_rlsm.rb
+test/dfa_spec.rb
+test/monoid_spec.rb
+test/regexp_spec.rb
