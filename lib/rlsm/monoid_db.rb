@@ -110,7 +110,7 @@ SQL
       q = "SELECT binop FROM monoids"
 
       where = Columns.map do |col|
-        params[col] ? (col.to_s + " = " + params[col]) : nil
+        params[col] ? ("#{col.to_s} = #{params[col]}") : nil
       end.compact.join(" AND ")
 
       if where.length > 0

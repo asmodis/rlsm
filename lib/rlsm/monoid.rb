@@ -28,6 +28,7 @@
 
 require File.join(File.dirname(__FILE__), 'monkey_patching')
 require File.join(File.dirname(__FILE__), 'dfa')
+require File.join(File.dirname(__FILE__), 'exceptions.rb')
 
 # A Monoid is a set of elements with an associative binary operation and a neutral element.
 module RLSM

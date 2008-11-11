@@ -29,6 +29,7 @@
 require File.join(File.dirname(__FILE__), 'monkey_patching')
 require File.join(File.dirname(__FILE__), 'monoid')
 require File.join(File.dirname(__FILE__), 'regexp')
+require File.join(File.dirname(__FILE__), 'exceptions.rb')
 
 module RLSM
   class DFA
