@@ -27,23 +27,21 @@
 
 require File.join(File.dirname(__FILE__), 'monkey_patching')
 require File.join(File.dirname(__FILE__), 'exceptions.rb')
+require File.join(File.dirname(__FILE__), 'regexp_nodes', 'renodes')
+require File.join(File.dirname(__FILE__), 'dfa')
 
 module RLSM
   class RegExp
+    include RLSM::RENodes
+
     #Creates a new RegExp from a string description. Metacharacters are 
     #   & * | ( )
     #Here & is the empty word and an empty string represents the empty set.
-    def initialize(str = "")
+    def initialize(desc = "")
       #Is the argument a well formed RegExp?
-      _well_formed?(str)
+      _well_formed?(desc)
       
-      #More than one & or * in a row is useless
-      re = str.squeeze('&*')
-
-      #* on a & is &
-      re = re.gsub('&*', '&')
-
-      @re = NodeFactory.new_node(nil, re)
+      @re = RLSM::RENodes.new(desc)
     end
 
 #--
@@ -56,7 +54,7 @@ module RLSM
       #A double star is also useless
       return if empty? or lambda? or (@re.class == Star)
       str = '(' + to_s + ')*'
-      @re = NodeFactory.new_node(nil, str)
+      @re = RLSM::RENodes.new(str)
       
       #Unset the str rep
       @re_str = nil
@@ -143,7 +141,7 @@ module RLSM
         end
       end
           
-      tmp_re = NodeFactory.new_node(nil, rre)
+      tmp_re = RLSM::RENodes.new(rre)
 
       #Step 2a: Construct a DFA representation of this new regexp
       #Step 2b: reverse the substitution (yields (maybe) a NFA)
@@ -214,11 +212,8 @@ module RLSM
       #parantheses must be balanced, somthing like |) or *a or (| isn't allowed
       #1 balanced parenthesis
       state = 0
-      count = Hash.new(0)
-      count['('] = 1
-      count[')'] = -1
       str.each_char do |c|
-        state += count[c]
+        state += RLSM::RENodes::PCount[c]
       end
       
       if state != 0
@@ -230,365 +225,5 @@ module RLSM
         raise RegExpException, "Bad character sequence #{$&} found in #{str}"
       end
     end    
-
-    class PrimExp
-      def initialize(parent, str)
-        @parent = parent
-        if str == '&' or str == ['&']
-          @content = '&'
-          @null = true
-        else
-          @content = str.reject { |c| c == '&' }
-          @null = false
-        end
-      end
-
-      def null?
-        @null
-      end
-
-      def first
-        @null ? [] : @content[0,1]
-      end
-
-      def last
-        @null ? [] : @content[-1,1]
-      end
-
-      def follow
-        res = []
-
-        (1...@content.length).each do |i|
-          res << [@content[i-1,1], @content[i,1]]
-        end
-
-        res
-      end
-
-      def to_s
-        @content.to_s
-      end
-
-      def lambda?
-        @null
-      end
-
-      def empty?
-        @content == '' or @content == []
-      end
-    end
-
-    class Star
-      def initialize(parent, str)
-        @parent = parent
-        @child = NodeFactory.new_node(self, str[(0..-2)])
-      end
-      
-      def null?
-        true
-      end
-
-      def first
-        @child.first
-      end
-
-      def last
-        @child.last
-      end
-
-      def follow
-        res = @child.follow
-
-        #Cross of last and first
-        first.each do |f|
-          last.each do |l|
-            res << [l,f]
-          end
-        end
-
-        res
-      end
-
-      def to_s
-        if @child.class == PrimExp and @child.to_s.length == 1
-          return "#{@child.to_s}*"
-        else
-          return "(#{@child.to_s})*"
-        end
-      end
-
-      def lambda?
-        false
-      end
-
-      def empty?
-        false
-      end
-    end
-
-    class Union
-      def initialize(parent, str)
-        @parent = parent
-        @childs = _split(str).map do |substr|
-          NodeFactory.new_node(self, substr)
-        end
-      end
-
-      def null?
-        @childs.any? { |child| child.null? }
-      end
-
-      def first
-        res = []
-        @childs.each do |child|
-          child.first.each do |f|
-            res << f
-          end
-        end
-
-        res
-      end
-
-      def last
-        res = []
-        @childs.each do |child|
-          child.last.each do |l|
-            res << l
-          end
-        end
-
-        res
-      end
-
-      def follow
-        res = []
-        @childs.each do |child|
-          child.follow.each do |f|
-            res << f
-          end
-        end
-
-        res
-      end
-
-      def to_s
-        if @parent.nil? or @parent.class == Union or @paarent.class == Star
-          return @childs.map { |child| child.to_s }.join('|')
-        else
-          return '(' + @childs.map { |child| child.to_s }.join('|') + ')'
-        end
-      end
-      
-      def lambda?
-        false
-      end
-
-      def empty?
-        false
-      end
-
-      private
-      def _split(str)
-        state = 0
-        count = Hash.new(0)
-        count['('] = 1
-        count[')'] = -1
-
-        res = [[]]
-
-        str.each_char do |c|
-          state += count[c]
-          if c == '|' and state == 0
-            res << []
-          else
-            res.last << c
-          end
-        end
-
-        res#.map { |substr| substr.join }
-      end
-    end
-
-    class Concat
-      def initialize(parent, str)
-        @parent = parent
-        @childs = _split(str).map do |substr|
-          NodeFactory.new_node(self, substr)
-        end.reject { |child| child.lambda? }
-      end
-
-      def null?
-        @childs.all? { |child| child.null? }
-      end
-
-      def first
-        res = []
-        @childs.each do |child|
-          child.first.each do |f|
-            res << f
-          end
-
-          break unless child.null?
-        end
-
-        res
-      end
-
-      def last
-        res = []
-        @childs.reverse.each do |child|
-          child.last.each do |f|
-            res << f
-          end
-
-          break unless child.null?
-        end
-
-        res
-      end
-
-      def follow
-        res = []
-
-        @childs.each do |child|
-          child.follow.each do |f|
-            res << f
-          end
-        end
-
-        (1...@childs.size).each do |i|
-          @childs[i-1].last.each do |l|
-            @childs[(i..-1)].each do |ch|
-              ch.first.each do |f|
-                res << [l,f]
-              end
-
-              break unless ch.null?
-            end
-          end
-        end
-
-        res
-      end
-
-      def to_s
-        @childs.map { |child| child.to_s }.join
-      end
-
-      def lambda?
-        false
-      end
-
-      def empty?
-        false
-      end
-
-      private
-      def _split(str)
-        state = 0
-        count = Hash.new(0)
-        count['('] = 1
-        count[')'] = -1
-
-        res = [[]]
-        previous = nil
-        str.each_char do |c|
-          state += count[c]
-          
-          if state == 1 and c == '('
-            res << []
-            res.last << c
-          elsif state == 0 and c == '*'
-            if previous == ')'
-              res[-2] << c
-            else
-              res << [res.last.pop, c]
-              res << []
-            end
-          elsif state == 0 and c == ')'
-            res.last << c
-            res << []
-          else
-            res.last << c
-          end
-          
-          previous = c
-        end
-
-        res.select { |subarr| subarr.size > 0 }#.map { |substr| substr.join }
-      end
-    end
-
-    class NodeFactory
-      def self.new_node(parent, arg)
-
-        #Remove parentheses
-        str = arg.dup
-        while sp(str)
-          str = str[(1..-2)]
-        end
-#puts "Processing: #{arg} from #{parent.class}"
-        #Choose the right node type
-        if prim?(str)
-          return PrimExp.new(parent, str)
-        elsif star?(str)
-          return Star.new(parent, str)
-        elsif union?(str)
-          return Union.new(parent, str)
-        else
-          return Concat.new(parent, str)
-        end
-
-      end
-
-      private
-      def self.sp(str)
-        if str[0,1].include? '(' and str[-1,1].include? ')'
-          state = 0
-          l = 0
-          count = Hash.new(0)
-          count['('] = 1
-          count[')'] = -1
-
-          str.each_char do |c|
-            state += count[c]
-            l += 1
-            break if state == 0
-          end
-          
-          return true if str.length == l
-        end
-        
-        false
-      end
-
-      def self.prim?(str)
-        not ['(', ')', '|', '*'].any? { |c| str.include? c }
-      end
-
-      def self.star?(str)
-        if str[-1,1].include? '*'
-          return true if sp(str[(0..-2)]) #something like (....)*
-          return true if str.length == 2  #something like a*
-        end
-
-        false
-      end
-
-      def self.union?(str)
-        state = 0
-        count = Hash.new(0)
-        count['('] = 1
-        count[')'] = -1
-
-        str.each_char do |c|
-          state += count[c]
-
-          return true if c == '|' and state == 0
-        end
-
-        false
-      end
-    end
   end     
 end

@@ -490,7 +490,7 @@ class Monoid
     if names and names.class == Array and names.size == @order
       @names = names
     else
-      #Make a guess, works if convention is followed.
+      #Make a guess, works if the convention that the first row belongs to the neutral element  is followed.
       @names = @bo.flatten.uniq.clone
     end
 
