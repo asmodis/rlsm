@@ -391,7 +391,7 @@ class Monoid
       @names.each { |s1| trans << [char, s1, @names[self[s1,char]]] }
     end
 
-    RLSM::DFA.new alph, states, initial, finals, trans    
+    RLSM::DFA.new alph, states, initial, finals.map {|c| @names[c] }, trans
   end
   
   private
