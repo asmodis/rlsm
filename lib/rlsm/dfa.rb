@@ -515,7 +515,9 @@ module RLSM
 
     #Returns a string represantation
     def to_s
-      @states.map { |state| state.to_s }.join("\n")
+      str = "\t| #{@alphabet.join(' | ')} \n"
+      str += '-'*(str.length+7) + "\n"
+      str + @states.map { |state| state.to_s }.join("\n")
     end
 
     def inspect
@@ -684,8 +686,8 @@ module RLSM
       str = ''
       str += '-> ' if initial?
       str += '* ' if final?
-      str += @label.to_s + ': '
-      str += @trans.to_a.map { |c,s| c+' -> '+s.label.to_s }.join('; ')
+      str += @label.to_s + "\t| "
+      str += @dfa.alphabet.map { |c| process(c) ? process(c).label : ' ' }.join(' | ')
 
       str
     end
