@@ -454,13 +454,14 @@ module RLSM
 
         matr.map! do |row|
           row.each_with_index do |re,j|
-            row[j] = re + ri[j]
+            row[j] = re + row[i]*ri[j]
           end
 
           row[i] = RLSM::RegExp.new
 
           row
         end
+
       end
 
       #Examine now the last remaining first row (irritating...)
