@@ -517,6 +517,11 @@ module RLSM
     def to_s
       @states.map { |state| state.to_s }.join("\n")
     end
+
+    def inspect
+      "<#{self.class}: #{@states.map {|c| c.label }.join(', ') }"
+    end
+
         
 
     protected

@@ -372,9 +372,9 @@ class Monoid
 
   #Returns a DFA with the monoid elements as states, the neutral element as initial state and transitions given by the binary operation. The argument gives the final states. If the monoid is syntactic, the finals must be a disjunctive subset. If no argument is given in this case, the smallest disjunctive subset is used.
   def to_dfa(finals = [])
-    alph = @names.values_at(generating_subset)
+    alph = @names.values_at(*generating_subset)
     states = @names.clone
-    inital = @names.first
+    initial = @names.first
 
     if syntactic?
       if finals.empty?
@@ -388,7 +388,7 @@ class Monoid
     
     trans = []
     alph.each do |char|
-      @names.each { |s1| trans << [char, s1, self[s1,char]] }
+      @names.each { |s1| trans << [char, s1, @names[self[s1,char]]] }
     end
 
     RLSM::DFA.new alph, states, initial, finals, trans    
