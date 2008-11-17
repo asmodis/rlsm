@@ -46,7 +46,7 @@ module RLSM::RENodes
     end
 
     def to_s
-      if @parent.nil? or @parent.class == Union or @paarent.class == Star
+      if @parent.nil? or @parent.class == Union or @parent.class == Star
         return @childs.map { |child| child.to_s }.join('|')
       else
         return '(' + @childs.map { |child| child.to_s }.join('|') + ')'
