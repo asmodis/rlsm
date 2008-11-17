@@ -15,7 +15,7 @@ def show(obj)
     obj.each { |o| puts Presenter.to_txt o }
     puts 
   else
-    puts Presenter.to_txt o
+    puts Presenter.to_txt obj
     puts
   end
 end
