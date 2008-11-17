@@ -33,5 +33,5 @@ db_find :syntactic  => 1, :idempotent => 0
 =end
 
 def db_find(params = {})
-  RLSM::MonoidDB.find(params).flatten.map { |d| RLSM::Monoid.new d, :create_names => true) }
+  RLSM::MonoidDB.find(params).flatten.map { |d| RLSM::Monoid.new d, :create_names => true }
 end
