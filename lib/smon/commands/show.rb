@@ -11,24 +11,11 @@ Not working: show "0" !
 =end
 
 def show(obj)
-  if obj.class == RLSM::Monoid
-    rows = obj.binary_operation.map { |row| row.join(' | ')}
-    rows.map! { |r| '| ' + r.gsub(/\w/) { |c| obj.elements[c.to_i] } + " |\n" }
-    row_sep = rows.first.scan(/./m).map do |c|
-      case c
-      when '|' : '+'
-      when "\n" : "\n"
-      else
-        '-'
-      end
-    end.join
-
-    puts row_sep
-    puts rows.join(row_sep)
-    puts row_sep
-    puts
+  if obj.class == Array
+    obj.each { |o| puts Presenter.to_txt o }
+    puts 
   else
-    puts obj.to_s
+    puts Presenter.to_txt o
     puts
   end
 end

@@ -2,6 +2,7 @@ require "readline"
 require "abbrev"
 require "rubygems"
 require File.join(File.dirname(__FILE__), '..', 'rlsm')
+require File.join(File.dirname(__FILE__), 'presenter')
 
 class Smon
   Commands = []
