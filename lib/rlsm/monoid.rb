@@ -494,7 +494,7 @@ class Monoid
       @names = @bo.flatten.uniq.clone
     end
 
-    @bo = (@bo.flatten.map { |e| @names.index(e) })/@order
+    @bo = (@bo.flatten.map { |e| @names.include?(e) ? @names.index(e) : e })/@order
   end
 
   def _check_form_of_binary_operation
