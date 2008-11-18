@@ -28,6 +28,7 @@ lib/smon/commands/regexp.rb
 lib/smon/commands/reload.rb
 lib/smon/commands/show.rb
 lib/smon/presenter.rb
+lib/smon/presenter/tex_presenter.rb
 lib/smon/presenter/txt_presenter.rb
 lib/smon/smon.rb
 test/dfa_spec.rb
