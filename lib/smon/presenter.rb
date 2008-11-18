@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), 'presenter', 'txt_presenter')
+require File.join(File.dirname(__FILE__), 'presenter', 'tex_presenter')
 
 class Presenter
   #Returns a LaTeX representation of the given object as a string.

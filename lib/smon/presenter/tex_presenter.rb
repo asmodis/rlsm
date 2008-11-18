@@ -15,18 +15,19 @@ class TexPresenter
     file = opts[:filename] || "/tmp/#{cls}-#{Time.now.strftime("%d%m%Y%H%M%S")}.tex"
     if opts[:compile]
       str = standalone(str) unless opts[:standalone]
+
       File.open(file, 'w') { |f| f.puts str }
       
       if opts[:pdf]
         if %x[which pdflatex] != ''
-          puts %x[pdflatex file]
+          puts system "pdflatex -interaction=nonstopmode #{file}"
         else
           puts "No pdflatex found."
         end
       end
 
       if %x[which latex] != ''
-        puts %x[latex file]
+        puts system "latex -interaction=nonstopmode #{file}"
       else
         puts "No latex found."
       end
@@ -158,7 +159,7 @@ class TexPresenter
   end
 
   def special_elements(m)
-    out += "\\item[Null Element:] " + (m.null_element ? m.elements[m.null_element] : 'none') + "\n"
+    out = "\\item[Null Element:] " + (m.null_element ? m.elements[m.null_element] : 'none') + "\n"
     out += "\\item[Idempotents:] #{set_to_list m.idempotents, m.elements}\n"
 
     unless m.null_element
@@ -194,6 +195,6 @@ class TexPresenter
   end
 
   def re_to_tex(re)
-    "\\ensuremath{#{re.to_s.gsub('|', '\mid').gsub('&', '\lambda ')}}"
+    "\\ensuremath{#{re.to_s.gsub('|', '\mid ').gsub('&', '\lambda ')}}"
   end
 end
