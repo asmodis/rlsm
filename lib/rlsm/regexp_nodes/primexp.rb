@@ -28,7 +28,7 @@ module RLSM::RENodes
       res = []
       
       (1...@content.length).each do |i|
-        res << [@content[i-1,1], @content[i,1]]
+        res << [@content[i-1,1].first, @content[i,1].first]
       end
 
       res
