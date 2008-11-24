@@ -32,9 +32,11 @@ require File.join(File.dirname(__FILE__), 'presenter')
 
 class Smon
   Commands = []
-  Columns = [':binop', ':m_order', ':num_generators', ':num_idempotents', ':has_null',
-             ':num_left_nulls', ':num_right_nulls', ':is_group', ':commutative', ':aperiodic',
-             ':syntatctic', ':idempotent', ':l_trivial', ':r_trivial', ':d_trivial']
+  Columns = [':binop =>', ':m_order =>', ':num_generators =>',
+             ':num_idempotents =>', ':has_null =>', ':num_left_nulls =>',
+             ':num_right_nulls =>', ':is_group =>', ':commutative =>', 
+             ':aperiodic =>', ':syntatctic =>', ':idempotent =>', 
+             ':l_trivial =>', ':r_trivial =>', ':d_trivial =>']
   CmdHelp = {}
   Categories = {}
   LoadPath = File.join(File.dirname(__FILE__), 'commands')
