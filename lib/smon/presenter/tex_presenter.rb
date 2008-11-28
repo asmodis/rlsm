@@ -176,13 +176,13 @@ class TexPresenter
   end
 
   def classes(m)
-    out = "\\item[L-Classes:] " + m.l_classes.map { |c| "{#{ set_to_list c, m.elements}}" }.join('; ')
+    out = "\\item[L-Classes:] " + m.l_classes.map { |c| "$\\lbrace #{ set_to_list c, m.elements}\\rbrace$" }.join('; ')
     out += "\n"
-    out += "\\item[R-Classes:] " + m.r_classes.map { |c| "{#{ set_to_list c, m.elements}}" }.join('; ')
+    out += "\\item[R-Classes:] " + m.r_classes.map { |c| "$\\lbrace #{ set_to_list c, m.elements}\\rbrace$" }.join('; ')
     out += "\n"
-    out += "\\item[H-Classes:] " + m.h_classes.map { |c| "{#{ set_to_list c, m.elements}}" }.join('; ')
+    out += "\\item[H-Classes:] " + m.h_classes.map { |c| "$\\lbrace #{ set_to_list c, m.elements}\\rbrace$" }.join('; ')
     out += "\n"
-    out += "\\item[D-Classes:] " + m.d_classes.map { |c| "{#{ set_to_list c, m.elements}}" }.join('; ')
+    out += "\\item[D-Classes:] " + m.d_classes.map { |c| "$\\lbrace #{ set_to_list c, m.elements}\\rbrace$" }.join('; ')
     out + "\n\n"
   end
 
@@ -206,20 +206,38 @@ class TexPresenter
 
   def syntactic_stuff(m)
     out = "\\item[Disjunctive Subsets:] " + m.all_disjunctive_subsets.map do |dss|
-      "{"+ set_to_list(dss, m.elements) + "}"
+      "$\\lbrace "+ set_to_list(dss, m.elements) + "\\rbrace$ "
     end.join("; ") + "\n"
 
     dfa = m.to_dfa
     re = dfa.to_regexp
     
-    out += "\\item[DFA for $\lbrace{#{set_to_list m.disjunctive_subset, m.elements}}\rbrace$]:\n"
+    out += "\\item[DFA for $\\lbrace{#{set_to_list m.disjunctive_subset, m.elements}}\\rbrace$]:\n"
     out += dfa_to_tex(dfa) + "\n\n"
       
     out + "\\item[Corresponding RegExp:] #{re_to_tex re}\n\n"
   end
 
   def dfa_to_tex(dfa)
-    "TODO"
+    if dot_possible?
+      "TODO"
+    else
+      str = "\\begin{tabular}{|r|" + dfa.alphabet.map { 'c' }.join('|') + "|}\n"
+      str += "\\hline\n"
+      str += " & " + dfa.alphabet.map { |c| "\\textbf{#{c}}"}.join(' & ') + "\\\\\\hline\n"
+      dfa.states.each do |s|
+        str += '$*$ ' if s.final?
+        str += '$\to$ ' if s.initial?
+        str += s.label + " & "
+        str += dfa.alphabet.map { |c| s.process(c) ? s.process(c).label : ' '}.join(' & ')
+        str += "\\\\\n"
+      end
+      str + "\\hline\n\\end{tabular}\n"
+    end
+  end
+
+  def dot_possible?
+    false
   end
 
   def re_to_tex(re)
