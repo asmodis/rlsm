@@ -23,9 +23,11 @@ lib/smon/commands/exit.rb
 lib/smon/commands/help.rb
 lib/smon/commands/intro.rb
 lib/smon/commands/monoid.rb
+lib/smon/commands/pdf.rb
 lib/smon/commands/quit.rb
 lib/smon/commands/regexp.rb
 lib/smon/commands/reload.rb
+lib/smon/commands/script.rb
 lib/smon/commands/show.rb
 lib/smon/presenter.rb
 lib/smon/presenter/tex_presenter.rb

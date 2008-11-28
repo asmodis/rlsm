@@ -24,8 +24,9 @@
 #TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 #SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-
-require File.join(File.dirname(__FILE__), '..', '..', 'rlsm')
+require File.join(File.dirname(__FILE__), '..', '..', 'rlsm', 'monoid')
+require File.join(File.dirname(__FILE__), '..', '..', 'rlsm', 'dfa')
+require File.join(File.dirname(__FILE__), '..', '..', 'rlsm', "regexp")
 
 class TexPresenter
   #Returns a string with a LaTeX representation of the given object.
@@ -39,7 +40,7 @@ class TexPresenter
     cls = obj.class.to_s[(6..-1)].downcase
     str = self.send cls.to_sym, obj
     str = opts[:standalone] ? standalone(str) : str
-    file = opts[:filename] || "/tmp/#{cls}-#{Time.now.strftime("%d%m%Y%H%M%S")}.tex"
+    file = opts[:filename] || "#{cls}_#{Time.now.strftime("%H%M%S")}.tex"
     if opts[:compile]
       str = standalone(str) unless opts[:standalone]
 

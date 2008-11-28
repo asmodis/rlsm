@@ -18,5 +18,5 @@ def reload(cmd)
     cat.delete cmd
   end
 
-  load(File.join(LoadPath, cmd + '.rb'))
+  load(cmd)
 end

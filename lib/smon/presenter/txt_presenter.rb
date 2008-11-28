@@ -25,7 +25,9 @@
 #SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-require File.join(File.dirname(__FILE__), '..', '..', 'rlsm')
+require File.join(File.dirname(__FILE__), '..', '..', 'rlsm', 'monoid')
+require File.join(File.dirname(__FILE__), '..', '..', 'rlsm', 'dfa')
+require File.join(File.dirname(__FILE__), '..', '..', 'rlsm', "regexp")
 
 class TxtPresenter
   #Returns a string with a txt representation of the given object.

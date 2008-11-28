@@ -27,7 +27,12 @@
 
 require "readline"
 require "abbrev"
-require File.join(File.dirname(__FILE__), '..', 'rlsm')
+
+require File.join(File.dirname(__FILE__), '..', 'rlsm', 'monoid')
+require File.join(File.dirname(__FILE__), '..', 'rlsm', 'dfa')
+require File.join(File.dirname(__FILE__), '..', 'rlsm', "regexp")
+require File.join(File.dirname(__FILE__), '..', 'rlsm', "monoid_db")
+
 require File.join(File.dirname(__FILE__), 'presenter')
 
 class Smon
