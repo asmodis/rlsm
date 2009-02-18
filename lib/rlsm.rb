@@ -1,39 +1,60 @@
-#
-# This file is part of the RLSM gem.
-#
-#(The MIT License)
-#
-#Copyright (c) 2008 Gunther Diemant <g.diemant@gmx.net>
-#
-#Permission is hereby granted, free of charge, to any person obtaining
-#a copy of this software and associated documentation files (the
-#'Software'), to deal in the Software without restriction, including
-#without limitation the rights to use, copy, modify, merge, publish,
-#distribute, sublicense, and/or sell copies of the Software, and to
-#permit persons to whom the Software is furnished to do so, subject to
-#the following conditions:
-#
-#The above copyright notice and this permission notice shall be
-#included in all copies or substantial portions of the Software.
-#
-#THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-#EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-#MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-#IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-#CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-#TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-#SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-
-
-$:.unshift File.join(File.dirname(__FILE__), 'rlsm')
-
-require 'monoid'
-require 'dfa'
-require "regexp"
-require "mgen"
-require "monoid_db"
+$:.unshift File.expand_path(File.dirname(__FILE__))
 
 module RLSM
-  VERSION = "0.2.4"
+  VERSION = '0.4.0'
+end
+
+#Setting up the exception classes.
+class RLSMException < Exception; end
+class MonoidException < RLSMException; end
+class DFAException < RLSMException; end
+class REException < RLSMException; end
+
+#--
+#Monkey patching the Array class
+class Array # :nodoc:
+  #Returns all permutations of the array.
+  def permutations
+    return [self] if size < 2
+    perm = []
+    each { |e| (self - [e]).permutations.each { |p| perm << ([e] + p) } }
+    perm
+  end
+
+  #Returns the powerset of the array (interpreted as set).
+  def powerset
+    ret = self.inject([[]]) do |acc, x|
+      res = []
+      acc.each { |s| res << s; res << ([x]+s).sort }
+      res
+    end
+
+    ret.sort_lex
+  end
+
+  #Sorts an array of arrays more or less lexicographical.
+  def sort_lex
+    sort { |s1, s2| s1.size == s2.size ? s1 <=> s2 : s1.size <=> s2.size }
+  end
+
+  #Returns the cartesian product of self and the given arrays
+  def product(*args)
+    args.inject(self.map { |x| [x] }) do |res,arr|
+      new = []
+      arr.each do |x|
+        new += res.map  { |tup| tup += [x] }
+      end
+      new
+    end
+  end
+
+  #Returns all unordered pairs.
+  def unordered_pairs
+    pairs = []
+    (0...size-1).each do |i|
+      pairs |= self[i+1..-1].map { |x| [self[i],x] }
+    end
+
+    pairs
+  end
 end
