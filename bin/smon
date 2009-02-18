@@ -1,4 +1,2 @@
 #! /usr/bin/env ruby
-require File.join(File.dirname(__FILE__), '..', 'lib', 'smon', 'smon')
-
-Smon.new
+puts "Comming soon"
