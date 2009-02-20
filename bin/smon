@@ -1,2 +1,38 @@
 #! /usr/bin/env ruby
-puts "Comming soon"
+require File.expand_path(File.join(File.dirname(__FILE__), '..',
+                                   'lib', 'rlsm'))
+require 'monoid'
+require 'dfa'
+require 're'
+require 'database'
+
+class SMON
+  def initialize(args)
+    puts "Welcome to SMON (v#{RLSM::VERSION})"
+
+    if args.empty?
+      interactive_mode
+    else
+      args.each do |file|
+        process_file file
+      end
+    end
+  end
+
+  private
+  def interactive_mode
+    puts "Starting interactive mode ..."
+    puts "Comming soon ..."
+  end
+
+  def process_file(file)
+    unless File.exists? file
+      puts "Error: File '#{file}' not found."
+      exit
+    end
+
+    puts "Processing file '#{file}' ..."
+  end
+end
+
+SMON.new ARGV
