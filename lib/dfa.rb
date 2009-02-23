@@ -360,6 +360,10 @@ Minimizes the DFA. Takes as optional parameter a hash with only processed key :+
     simplify_les_row(les.pop)[:final]
   end
 
+  def inspect
+    "<#{self.class}: #{@states.join(',')}>"
+  end
+
   def to_s
     output = []
     output << @states.inject(['']) do |res, state|

@@ -548,7 +548,7 @@ Returns true if the monoid is aperiodic. (A synonym for h_trivial?)
   end
 
   def inspect # :nodoc:
-    "<#{self.class} : {#{@elements.join(',')}}; #{to_s}>"
+    "<#{self.class}: #{to_s}>"
   end
 
 =begin rdoc
