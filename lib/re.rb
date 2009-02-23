@@ -11,6 +11,10 @@ class RLSM::RE
   Lambda = '&'
   Specials = [LeftBracket, RightBracket, Star, Union, Lambda]
 
+  def to_s
+    @pattern
+  end
+
   def inspect
     "<#{self.class}: #@pattern>"
   end

@@ -360,6 +360,45 @@ Minimizes the DFA. Takes as optional parameter a hash with only processed key :+
     simplify_les_row(les.pop)[:final]
   end
 
+  def to_s
+    output = []
+    output << @states.inject(['']) do |res, state|
+      prefix = ''
+      prefix += '*' if @finals.include? state
+      prefix += '->' if initial_state == state
+
+      res + [prefix + ' ' + state + ' ']
+    end
+
+    @alphabet.each do |letter|
+      column = [' ' + letter + ' ']
+      @states.each do |state|
+        tmp = self[letter,state]
+        if tmp.nil?
+          column << ' nil '
+        else
+          column << ' ' + tmp + ' '
+        end
+      end
+
+      output << column.clone
+    end
+
+    #Align output
+    output.map! do |col|
+      max_length = col.map { |x| x.length }.max
+      col.map { |x| ' '*(max_length - x.length) + x }
+    end
+
+    rows = (0..@states.size).map { |i| output.map { |col| col[i] } }
+    rows.map! { |row| row.join('|') }
+    head = rows.shift
+    rows.unshift head.scan(/./).map { |c| c == '|' ? '+' : '-' }.join
+    rows.unshift head
+
+    rows.join("\n")
+  end
+
   private
   def initialize_row_for(state)
     row = { :state => state.clone }
