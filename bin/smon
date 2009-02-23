@@ -35,17 +35,17 @@ class SMON
 
   def monoid(mon)
     @objects << RLSM::Monoid.new(mon)
-    @objects.last
+    @monoid = @objects.last
   end
 
   def dfa(dfa)
     @objects << RLSM::DFA.create(dfa)
-    @objects.last
+    @dfa = @objects.last
   end
 
   def regexp(re)
     @objects << RLSM::RE.new(re)
-    @objects.last
+    @re = @objects.last
   end
 
   def show(obj = nil)
@@ -63,8 +63,9 @@ class SMON
 
   def db_stat
     stat = RLSM::MonoidDB.statistic
-    head = stat.shift.join(' | ')
-    column_widths = head.scan(/./).inject([0]) do |res,char|
+    result = stat.shift.join(' | ')
+
+    column_widths = result.scan(/./).inject([0]) do |res,char|
       if char == '|'
         res << 0
       else
@@ -73,7 +74,9 @@ class SMON
 
       res
     end
-    puts head
+
+    result += ("\n" + '   ' + result.gsub(/[^|]/, '-').gsub('|', '+'))
+
     stat.each do |row|
       justified = []
       row.each_with_index do |col,i|
@@ -83,12 +86,16 @@ class SMON
         justified << space + col + space + extra_space
       end
 
-      puts justified.join('|')
+      result += ("\n" + '   ' + justified.join('|'))
     end
+
+    result
   end
 
   def db_find(args)
-    puts "Not implemented."
+    count = RLSM::MonoidDB.count(args)
+    @search_result = RLSM::MonoidDB.find(args).flatten
+    "Found: #{count[0]} monoid(s) (#{count[1]} syntactic)\nSaved result in @search_result"
   end
 
   private
@@ -130,7 +137,13 @@ class SMON
 
   def process_command(cmd)
     begin
-      instance_eval cmd
+      if cmd =~ /^(show|describe)/
+        instance_eval(cmd)
+      elsif cmd =~ /^db_/
+        puts "=> " + instance_eval(cmd).to_s
+      else
+        puts "=> " + instance_eval(cmd).inspect
+      end
     rescue RLSMException => e
       puts "An error occured."
       p e
