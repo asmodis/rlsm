@@ -7,9 +7,15 @@ require 're'
 require 'database'
 
 class SMON
-  def initialize(args)
+  def initialize(args = [])
     puts "Welcome to SMON (v#{RLSM::VERSION})"
 
+    @objects = []
+
+    setup_builtin_commands
+  end
+
+  def run(args)
     if args.empty?
       interactive_mode
     else
@@ -19,10 +25,90 @@ class SMON
     end
   end
 
+  def quit
+    exit
+  end
+
+  def method_missing(cmd, *args)
+    puts "Error: Unknown command '#{cmd}'."
+  end
+
+  def monoid(mon)
+    @objects << RLSM::Monoid.new(mon)
+    @objects.last
+  end
+
+  def dfa(dfa)
+    @objects << RLSM::DFA.create(dfa)
+    @objects.last
+  end
+
+  def regexp(re)
+    @objects << RLSM::RE.new(re)
+    @objects.last
+  end
+
+  def show(obj = nil)
+    obj ||= @objects.last
+    if obj
+      puts obj.to_s
+    else
+      puts "No object present."
+    end
+  end
+
+  def help(*args)
+    puts "Not implemented."
+  end
+
+  def db_stat
+    stat = RLSM::MonoidDB.statistic
+    head = stat.shift.join(' | ')
+    column_widths = head.scan(/./).inject([0]) do |res,char|
+      if char == '|'
+        res << 0
+      else
+        res << res.pop + 1
+      end
+
+      res
+    end
+    puts head
+    stat.each do |row|
+      justified = []
+      row.each_with_index do |col,i|
+        col = col.to_s
+        space = ' '*((column_widths[i] - col.length)/2)
+        extra_space = ' '*((column_widths[i] - col.length)%2)
+        justified << space + col + space + extra_space
+      end
+
+      puts justified.join('|')
+    end
+  end
+
+  def db_find(args)
+    puts "Not implemented."
+  end
+
   private
+  def setup_builtin_commands
+    @_commands = []
+    @_help = {}
+  end
+
   def interactive_mode
     puts "Starting interactive mode ..."
-    puts "Comming soon ..."
+    puts "Type 'help' to get an overview of all availible commands or"
+    puts "type 'help :help' for an explanation of the help system."
+
+    setup_readline
+
+    loop { process_command Readline.readline("smon:> ", true) }
+  end
+
+  def setup_readline
+    require 'readline'
   end
 
   def process_file(file)
@@ -32,7 +118,30 @@ class SMON
     end
 
     puts "Processing file '#{file}' ..."
+    f = File.open(file, 'r')
+    begin
+      instance_eval f.each_line.to_a.join
+    rescue Exception => e
+      f.close
+      puts "Error while processing '#{file}'."
+      p e
+    end
+  end
+
+  def process_command(cmd)
+    begin
+      instance_eval cmd
+    rescue RLSMException => e
+      puts "An error occured."
+      p e
+    rescue SystemExit
+      puts "Cya."
+      exit
+    rescue Exception => e
+      puts "An unexpected error occured."
+      p e
+    end
   end
 end
 
-SMON.new ARGV
+SMON.new.run ARGV
