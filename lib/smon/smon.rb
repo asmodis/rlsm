@@ -2,39 +2,16 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rlsm'))
 
 class SMON
   def initialize(files, messenger)
-    STDOUT.puts "Welcome to SMON (v#{RLSM::VERSION})"
     @out = messenger
+
+    puts "Welcome to SMON (v#{RLSM::VERSION})"
+    load_features
 
     if files.empty?
       interactive_mode
     else
       files.each do |file|
         execute file
-      end
-    end
-  end
-
-  private
-  def interactive_mode
-    @out.puts "Entering interactive mode."
-  end
-
-  def execute(file)
-    if File.exists? file
-      STDOUT.puts "Executing file '#{file}' ..."
-      instance_eval File.open(file, 'r') { |f| f.read }
-    else
-      raise Exception, "File '#{file}' not found."
-    end
-  end
-end
-=begin
-  def run(args)
-    if args.empty?
-      interactive_mode
-    else
-      args.each do |file|
-        process_file file
       end
     end
   end
@@ -68,54 +45,116 @@ end
   def show(obj = nil)
     obj ||= @objects.last
     if obj
-      puts obj.to_s
+      @out.puts obj.to_s
     else
-      puts "No object present."
+      STDERR.puts "No object present."
     end
   end
 
   def help(*args)
-    puts "Not implemented."
+    STDERR.puts "Not implemented."
   end
 
-  def db_stat
-    stat = RLSM::MonoidDB.statistic
-    result = stat.shift.join(' | ')
 
-    column_widths = result.scan(/./).inject([0]) do |res,char|
-      if char == '|'
-        res << 0
+  private
+  def interactive_mode
+    puts "Entering interactive mode."
+
+    puts "Setting up the help system ..."
+    #setup_help_system
+
+    puts "Setting up readline ..."
+    setup_readline
+
+
+    @interactive = true
+
+    puts "\nInteractive mode started."
+    puts "Type 'help' to get an overview of all availible commands or"
+    puts "type 'help :help' for an explanation of the help system."
+
+    loop { process_command Readline.readline("smon:> ", true) }
+  end
+
+  def execute(file)
+    if File.exists? file
+      STDOUT.puts "Executing file '#{file}' ..."
+      begin
+        instance_eval File.open(file, 'r') { |f| f.read }
+      rescue => e
+        STDERR.puts "E: Error while executing '#{file}'. #{e.message}"
+      end
+    else
+      raise Exception, "File '#{file}' not found."
+    end
+  end
+
+  def load_features
+    puts "Checking optional features ..."
+    begin
+      require 'database'
+      require 'smon/db'
+      self.class.class_eval "include SmonDB"
+      @__db = true
+      puts "Feature 'db' enabled."
+    rescue => e
+      STDERR.puts "W: Could not load the database: #{e.message}"
+    end
+
+    if sys_cmd_exists?("latex")
+      require 'smon/latex'
+      self.class.class_eval "include SmonLatex"
+      puts "Feature 'latex' enabled."
+    else
+      STDERR.puts "W: No latex command found."
+    end
+
+    if sys_cmd_exists?("dot")
+      require 'smon/dot'
+      self.class.class_eval "include SmonDot"
+      puts "Feature 'dot' enabled"
+    else
+      STDERR.puts "W: No dot command found."
+    end
+  end
+
+  def sys_cmd_exists?(cmd)
+    system "which #{cmd} > /dev/null"
+  end
+
+  def setup_readline
+    require 'readline'
+
+    @__cmds = (self.public_methods + ['exit']) -
+      (Object.instance_methods + ['method_missing'])
+    if @__db
+      @__cmds += RLSM::MonoidDB::Columns.map { |x| x.inspect + " =>" }
+    end
+
+    Readline.completion_proc = lambda do |str|
+      pos = @__cmds.find_all { |cmd| cmd =~ Regexp.new("^#{str}") }
+      pos.size == 1 ? pos.first : nil
+    end
+  end
+
+  def process_command(cmd)
+    begin
+      if cmd =~ Regexp.new("^(#{@__cmds.join('|')})")
+        instance_eval(cmd)
       else
-        res << res.pop + 1
+        STDOUT.puts "=> " + instance_eval(cmd).inspect
       end
-
-      res
+    rescue RLSMException => e
+      STDERR.puts "An error occured. #{e.message}"
+    rescue SystemExit
+      STDOUT.puts "Cya."
+      exit
+    rescue Exception => e
+      STDERR.puts "An unexpected error occured. #{e.message}"
     end
-
-    result += ("\n" + '   ' + result.gsub(/[^|]/, '-').gsub('|', '+'))
-
-    stat.each do |row|
-      justified = []
-      row.each_with_index do |col,i|
-        col = col.to_s
-        space = ' '*((column_widths[i] - col.length)/2)
-        extra_space = ' '*((column_widths[i] - col.length)%2)
-        justified << space + col + space + extra_space
-      end
-
-      result += ("\n" + '   ' + justified.join('|'))
-    end
-
-    puts result
   end
-
-  def db_find(args)
-    count = RLSM::MonoidDB.count(args)
-    puts "Found: #{count[0]} monoid(s) (#{count[1]} syntactic)"
-    puts "Saved result in variable '@search_result'"
-
-    @search_result = RLSM::MonoidDB.find(args).flatten
-  end
+end
+=begin
 
   def describe(obj)
     monoid = obj.to_monoid
@@ -157,15 +196,6 @@ end
 
   def interactive_mode
     puts "Starting interactive mode ..."
-    puts "Type 'help' to get an overview of all availible commands or"
-    puts "type 'help :help' for an explanation of the help system."
-
-    @interactive = true
-
-    #setup_help_system
-    setup_readline
-
-    loop { process_command Readline.readline("smon:> ", true) }
   end
 
   def setup_readline
@@ -195,23 +225,6 @@ end
     end
   end
 
-  def process_command(cmd)
-    begin
-      if cmd =~ Regexp.new("^(#{@_commands.join('|')})")
-        instance_eval(cmd)
-      else
-        puts "=> " + instance_eval(cmd).inspect
-      end
-    rescue RLSMException => e
-      puts "An error occured."
-      p e
-    rescue SystemExit
-      puts "Cya."
-      exit
-    rescue Exception => e
-      puts "An unexpected error occured."
-      p e
-    end
-  end
+
 end
 =end
