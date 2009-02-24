@@ -90,6 +90,11 @@ class RLSM::RE
     end
   end
 
+  #Returns the syntactic monoid to this language.
+  def to_monoid
+    to_dfa.to_monoid
+  end
+
   #Returns true if the res are equal
   def ==(other)
     return true if @pattern == other.pattern

@@ -643,6 +643,11 @@ Also if the monoid is syntactic the set returned by disjunctive subset will be u
                      :transitions => get_transitions)
   end
 
+  #Returns itself.
+  def to_monoid
+    self
+  end
+
   private
   def get_transitions
     trans = []
