@@ -4,7 +4,7 @@ require "rubygems"
 require "sqlite3"
 
 class RLSM::MonoidDB
-  @@db = SQLite3::Database.open(File.join(File.dirname(__FILE__),
+  @@db = SQLite3::Database.open(File.join(File.dirname(__FILE__), '..',
                                           'data', 'monoids.db'))
 
   Columns = [:binop, :m_order, :num_generators,
