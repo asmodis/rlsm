@@ -11,8 +11,6 @@ class SMON
     puts "Welcome to SMON (v#{RLSM::VERSION})"
 
     @objects = []
-
-    setup_builtin_commands
   end
 
   def run(args)
@@ -98,17 +96,17 @@ class SMON
     "Found: #{count[0]} monoid(s) (#{count[1]} syntactic)\nSaved result in @search_result"
   end
 
-  private
-  def setup_builtin_commands
-    @_commands = []
-    @_help = {}
+  def describe(*args)
+    puts "Not implemented."
   end
 
+  private
   def interactive_mode
     puts "Starting interactive mode ..."
     puts "Type 'help' to get an overview of all availible commands or"
     puts "type 'help :help' for an explanation of the help system."
 
+    #setup_help_system
     setup_readline
 
     loop { process_command Readline.readline("smon:> ", true) }
@@ -116,6 +114,13 @@ class SMON
 
   def setup_readline
     require 'readline'
+    @_commands = %w(quit exit help show describe monoid regexp dfa
+    db_find db_stat) + RLSM::MonoidDB::Columns.map { |c| c.inspect + " =>" }
+
+    Readline.completion_proc = lambda do |str|
+      pos = @_commands.find_all { |cmd| cmd =~ Regexp.new("^#{str}") }
+      pos.size == 1 ? pos.first : nil
+    end
   end
 
   def process_file(file)
@@ -125,11 +130,10 @@ class SMON
     end
 
     puts "Processing file '#{file}' ..."
-    f = File.open(file, 'r')
+    script = File.open(file, 'r') { |f| f.read }
     begin
-      instance_eval f.each_line.to_a.join
+      instance_eval script
     rescue Exception => e
-      f.close
       puts "Error while processing '#{file}'."
       p e
     end
@@ -137,7 +141,7 @@ class SMON
 
   def process_command(cmd)
     begin
-      if cmd =~ /^(show|describe)/
+      if cmd =~ /^(show|describe|help)/
         instance_eval(cmd)
       elsif cmd =~ /^db_/
         puts "=> " + instance_eval(cmd).to_s
