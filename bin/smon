@@ -33,16 +33,19 @@ class SMON
 
   def monoid(mon)
     @objects << RLSM::Monoid.new(mon)
+    puts "=> #{@objects.last.inspect}" if @interactive
     @monoid = @objects.last
   end
 
   def dfa(dfa)
     @objects << RLSM::DFA.create(dfa)
+    puts "=> #{@objects.last.inspect}" if @interactive
     @dfa = @objects.last
   end
 
   def regexp(re)
     @objects << RLSM::RE.new(re)
+    puts "=> #{@objects.last.inspect}" if @interactive
     @re = @objects.last
   end
 
@@ -87,24 +90,61 @@ class SMON
       result += ("\n" + '   ' + justified.join('|'))
     end
 
-    result
+    puts result
   end
 
   def db_find(args)
     count = RLSM::MonoidDB.count(args)
+    puts "Found: #{count[0]} monoid(s) (#{count[1]} syntactic)"
+    puts "Saved result in variable '@search_result'"
+
     @search_result = RLSM::MonoidDB.find(args).flatten
-    "Found: #{count[0]} monoid(s) (#{count[1]} syntactic)\nSaved result in @search_result"
   end
 
-  def describe(*args)
-    puts "Not implemented."
+  def describe(obj)
+    monoid = obj.to_monoid
+    print_binary_operation(monoid)
+    print_properties(monoid)
+    print_syntactic_properties(monoid)
   end
 
   private
+  def print_binary_operation(monoid)
+    max_length = monoid.elements.map { |e| e.length }.max
+    rows = monoid.binary_operation.map do |row|
+      row.map do |e|
+        space = ' '*((max_length - e.length)/2)
+        extra_space = ' '*((max_length - e.length)%2)
+        space + extra_space + e + space
+      end.join(' | ')
+    end
+
+    first =  ' '*(max_length + 2) + '| ' + rows[0].clone + ' |'
+    seperator = first.gsub(/[^|]/,'-').gsub('|', '+')
+
+    rows.map! do |row|
+      ' ' + row[/^[^|]+\|/] + ' ' + row + " |"
+    end
+
+    puts first
+    puts seperator
+    puts rows.join("\n" + seperator + "\n")
+    puts seperator
+    puts
+  end
+
+  def print_properties(monoid)
+  end
+
+  def print_syntactic_properties(monoid)
+  end
+
   def interactive_mode
     puts "Starting interactive mode ..."
     puts "Type 'help' to get an overview of all availible commands or"
     puts "type 'help :help' for an explanation of the help system."
+
+    @interactive = true
 
     #setup_help_system
     setup_readline
@@ -141,10 +181,8 @@ class SMON
 
   def process_command(cmd)
     begin
-      if cmd =~ /^(show|describe|help)/
+      if cmd =~ Regexp.new("^(#{@_commands.join('|')})")
         instance_eval(cmd)
-      elsif cmd =~ /^db_/
-        puts "=> " + instance_eval(cmd).to_s
       else
         puts "=> " + instance_eval(cmd).inspect
       end
