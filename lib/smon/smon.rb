@@ -95,7 +95,27 @@ class SMON
       @out.puts
     else
       @out.puts "Submonoids:"
-      subs.each { |sm| @out.puts(sm); @out.puts }
+      rows = [[]]
+      width = 0
+      subs.each do |sm|
+        spl = sm.split("\n")
+        if (width + spl[0].length) <= 30
+          rows.last << spl
+          width += spl[0].length
+        else
+          rows << [spl]
+          width = spl[0].length
+        end
+      end
+      rows.each do |row|
+        max_lines = row.map { |sm| sm.size }.max
+
+        row.map! { |sm| sm + [' '*sm[0].length]*(max_lines-sm.size) }
+        (0...row[0].size).each do |i|
+          @out.puts row.map { |sm| sm[i] }.join('  ')
+        end
+        @out.puts
+      end
     end
   end
 
