@@ -16,6 +16,7 @@ class SMON
     end
   end
 
+  #A synonym for exit.
   def quit
     exit
   end
@@ -46,6 +47,17 @@ class SMON
     obj ||= @objects.last
     if obj
       @out.puts obj.to_s
+      @out.puts
+    else
+      STDERR.puts "No object present."
+    end
+  end
+
+  def describe(obj = nil)
+    obj ||= @objects.last
+
+    if obj
+      STDERR.puts "not implemented"
     else
       STDERR.puts "No object present."
     end
@@ -96,30 +108,15 @@ class SMON
       require 'smon/db'
       self.class.class_eval "include SmonDB"
       @__db = true
-      puts "Feature 'db' enabled."
     rescue => e
-      STDERR.puts "W: Could not load the database: #{e.message}"
+      STDERR.puts "W: Could not load feature 'db': #{e.message}"
     end
 
-    if sys_cmd_exists?("latex")
-      require 'smon/latex'
-      self.class.class_eval "include SmonLatex"
-      puts "Feature 'latex' enabled."
-    else
-      STDERR.puts "W: No latex command found."
-    end
+    require 'smon/latex'
+    self.class.class_eval "include SmonLatex"
 
-    if sys_cmd_exists?("dot")
-      require 'smon/dot'
-      self.class.class_eval "include SmonDot"
-      puts "Feature 'dot' enabled"
-    else
-      STDERR.puts "W: No dot command found."
-    end
-  end
-
-  def sys_cmd_exists?(cmd)
-    system "which #{cmd} > /dev/null"
+    require 'smon/dot'
+    self.class.class_eval "include SmonDot"
   end
 
   def setup_readline
@@ -187,44 +184,4 @@ end
     puts seperator
     puts
   end
-
-  def print_properties(monoid)
-  end
-
-  def print_syntactic_properties(monoid)
-  end
-
-  def interactive_mode
-    puts "Starting interactive mode ..."
-  end
-
-  def setup_readline
-    require 'readline'
-    @_commands = %w(quit exit help show describe monoid regexp dfa
-    db_find db_stat) + RLSM::MonoidDB::Columns.map { |c| c.inspect + " =>" }
-
-    Readline.completion_proc = lambda do |str|
-      pos = @_commands.find_all { |cmd| cmd =~ Regexp.new("^#{str}") }
-      pos.size == 1 ? pos.first : nil
-    end
-  end
-
-  def process_file(file)
-    unless File.exists? file
-      puts "Error: File '#{file}' not found."
-      exit
-    end
-
-    puts "Processing file '#{file}' ..."
-    script = File.open(file, 'r') { |f| f.read }
-    begin
-      instance_eval script
-    rescue Exception => e
-      puts "Error while processing '#{file}'."
-      p e
-    end
-  end
-
-
-end
 =end

@@ -28,6 +28,7 @@ module SmonDB
     end
 
     @out.puts result
+    @out.puts
   end
 
   def db_find(args)
