@@ -647,6 +647,11 @@ Also if the monoid is syntactic the set returned by disjunctive subset will be u
     self
   end
 
+  #Returns the regexp for the language.
+  def to_re
+    to_dfa.to_re
+  end
+
   private
   def get_transitions
     trans = []

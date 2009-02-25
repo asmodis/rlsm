@@ -93,6 +93,11 @@ class RLSM::RE
     to_dfa.to_monoid
   end
 
+  #Returns self.
+  def to_re
+    self
+  end
+
   #Returns true if the res are equal
   def ==(other)
     return true if @pattern == other.pattern

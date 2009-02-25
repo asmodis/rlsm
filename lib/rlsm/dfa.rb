@@ -349,6 +349,11 @@ Minimizes the DFA. Takes as optional parameter a hash with only processed key :+
     syntactic_monoid
   end
 
+  #Returns self.
+  def to_dfa
+    self
+  end
+
   #Returns a RE which represents the same language.
   def to_re
     les = []
