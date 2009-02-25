@@ -3,6 +3,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rlsm'))
 class SMON
   def initialize(files, messenger)
     @out = messenger
+    @objects = []
 
     puts "Welcome to SMON (v#{RLSM::VERSION})"
     load_features
@@ -57,7 +58,11 @@ class SMON
     obj ||= @objects.last
 
     if obj
-      STDERR.puts "not implemented"
+      monoid, dfa, re = get_elements(obj)
+      print_language(monoid, dfa, re)
+      print_monoid_properties(monoid)
+      print_submonoids(monoid)
+      print_syntactic_properties(monoid)
     else
       STDERR.puts "No object present."
     end
@@ -69,6 +74,103 @@ class SMON
 
 
   private
+  def print_syntactic_properties(m)
+    if m.syntactic?
+      @out.puts "Syntactic properties:"
+
+      m.all_disjunctive_subsets.each do |ds|
+        @out.puts "{#{ds.join(',')}} => #{m.to_dfa(ds).to_re}"
+      end
+      @out.puts
+    end
+  end
+
+  def print_submonoids(m)
+    subs = m.proper_submonoids.map do |sm|
+      binary_operation(sm)
+    end
+
+    if subs.empty?
+      @out.puts "Submonoids: none"
+      @out.puts
+    else
+      @out.puts "Submonoids:"
+      subs.each { |sm| @out.puts(sm); @out.puts }
+    end
+  end
+
+  def print_monoid_properties(m)
+    @out.puts "Properties of the monoid:"
+    @out.puts "          Generator: {#{m.generating_subset.join(',')}}"
+    @out.puts "        Commutative: #{m.commutative?}"
+    @out.puts "         Idempotent: #{m.idempotent?}"
+    @out.puts "          Syntactic: #{m.syntactic?}"
+    @out.puts "Aperiodic/H-trivial: #{m.aperiodic?}"
+    @out.puts "          L-trivial: #{m.l_trivial?}"
+    @out.puts "          R-trivial: #{m.r_trivial?}"
+    @out.puts "          D-trivial: #{m.d_trivial?}"
+    @out.puts "       Zero element: #{!m.zero_element.nil?}"
+    @out.puts
+    @out.puts "Special Elements:"
+    @out.puts " Idempotents: #{m.idempotents.join(',')}"
+    if m.zero_element
+      @out.puts "Zero element: #{m.zero_element}"
+    else
+      lz = (m.left_zeros.empty? ? ['none'] : m.left_zeros).join(',')
+      @out.puts "  Left-Zeros: #{lz}"
+      rz = (m.right_zeros.empty? ? ['none'] : m.right_zeros).join(',')
+      @out.puts " Right-Zeros: #{rz}"
+    end
+    @out.puts
+    @out.puts "Green Relations:"
+    lc = m.l_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
+    rc = m.r_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
+    hc = m.h_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
+    dc = m.d_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
+    @out.puts "L-Classes: #{lc}"
+    @out.puts "R-Classes: #{rc}"
+    @out.puts "H-Classes: #{hc}"
+    @out.puts "D-Classes: #{dc}"
+    @out.puts
+  end
+
+  def print_language(m,d,r)
+    @out.puts "Regular Expression: #{r.to_s}"
+    @out.puts "\nDFA:\n#{d.to_s}\n"
+    @out.puts "\nMonoid:\n"
+    @out.puts binary_operation(m)
+    @out.puts
+  end
+
+  def binary_operation(monoid)
+   max_length = monoid.elements.map { |e| e.length }.max
+    rows = monoid.binary_operation.map do |row|
+       row.map do |e|
+        space = ' '*((max_length - e.length)/2)
+        extra_space = ' '*((max_length - e.length)%2)
+        space + extra_space + e + space
+      end.join(' | ')
+    end
+
+    first =  ' '*(max_length + 2) + '| ' + rows[0].clone + ' |'
+    seperator = first.gsub(/[^|]/,'-').gsub('|', '+')
+
+    rows.map! do |row|
+      ' ' + row[/^[^|]+\|/] + ' ' + row + " |"
+    end
+
+    result = [first]
+    result << seperator
+    result << rows.join("\n" + seperator + "\n")
+    result << seperator
+
+    result.join("\n")
+  end
+
+  def get_elements(obj)
+    [obj.to_monoid, obj.to_dfa, obj.to_re]
+  end
+
   def interactive_mode
     puts "Entering interactive mode."
 
@@ -162,26 +264,6 @@ end
 
   private
   def print_binary_operation(monoid)
-    max_length = monoid.elements.map { |e| e.length }.max
-    rows = monoid.binary_operation.map do |row|
-      row.map do |e|
-        space = ' '*((max_length - e.length)/2)
-        extra_space = ' '*((max_length - e.length)%2)
-        space + extra_space + e + space
-      end.join(' | ')
-    end
 
-    first =  ' '*(max_length + 2) + '| ' + rows[0].clone + ' |'
-    seperator = first.gsub(/[^|]/,'-').gsub('|', '+')
-
-    rows.map! do |row|
-      ' ' + row[/^[^|]+\|/] + ' ' + row + " |"
-    end
-
-    puts first
-    puts seperator
-    puts rows.join("\n" + seperator + "\n")
-    puts seperator
-    puts
   end
 =end
