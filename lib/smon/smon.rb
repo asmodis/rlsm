@@ -58,8 +58,8 @@ class SMON
     obj ||= @objects.last
 
     if obj
-      monoid, dfa, re = get_elements(obj)
-      print_language(monoid, dfa, re)
+      monoid, dfa = obj.to_monoid, obj.to_dfa
+      print_language(monoid, dfa)
       print_monoid_properties(monoid)
       print_submonoids(monoid)
       print_syntactic_properties(monoid)
@@ -76,7 +76,7 @@ class SMON
   private
   def print_syntactic_properties(m)
     if m.syntactic?
-      @out.puts "Syntactic properties:"
+      @out.puts "SYNTACTIC PROPERTIES:"
 
       m.all_disjunctive_subsets.each do |ds|
         @out.puts "{#{ds.join(',')}} => #{m.to_dfa(ds).to_re}"
@@ -91,10 +91,10 @@ class SMON
     end
 
     if subs.empty?
-      @out.puts "Submonoids: none"
+      @out.puts "SUBMONOIDS: none"
       @out.puts
     else
-      @out.puts "Submonoids:"
+      @out.puts "SUBMONOIDS:"
       rows = [[]]
       width = 0
       subs.each do |sm|
@@ -120,44 +120,53 @@ class SMON
   end
 
   def print_monoid_properties(m)
-    @out.puts "Properties of the monoid:"
-    @out.puts "          Generator: {#{m.generating_subset.join(',')}}"
-    @out.puts "        Commutative: #{m.commutative?}"
-    @out.puts "         Idempotent: #{m.idempotent?}"
-    @out.puts "          Syntactic: #{m.syntactic?}"
-    @out.puts "Aperiodic/H-trivial: #{m.aperiodic?}"
-    @out.puts "          L-trivial: #{m.l_trivial?}"
-    @out.puts "          R-trivial: #{m.r_trivial?}"
-    @out.puts "          D-trivial: #{m.d_trivial?}"
-    @out.puts "       Zero element: #{!m.zero_element.nil?}"
-    @out.puts
-    @out.puts "Special Elements:"
-    @out.puts " Idempotents: #{m.idempotents.join(',')}"
+    block1 = []
+    block1 << "PROPERTIES OF THE MONOID:"
+    block1 << "   Generator: {#{m.generating_subset.join(',')}}"
+    block1 << "       Group: #{m.group?}"
+    block1 << " Commutative: #{m.commutative?}"
+    block1 << "  Idempotent: #{m.idempotent?}"
+    block1 << "   Syntactic: #{m.syntactic?}"
+    block1 << "   Aperiodic: #{m.aperiodic?}"
+    block1 << "   L-trivial: #{m.l_trivial?}"
+    block1 << "   R-trivial: #{m.r_trivial?}"
+    block1 << "   D-trivial: #{m.d_trivial?}"
+    block1 << "Zero element: #{!m.zero_element.nil?}"
+
+    max_length = block1.map { |row| row.length }.max
+    block1.map! { |row| row + ' '*(max_length - row.length) }
+
+    block2 = []
+    block2 << "SPECIAL ELEMENTS:"
+    block2 << " Idempotents: #{m.idempotents.join(',')}"
     if m.zero_element
-      @out.puts "Zero element: #{m.zero_element}"
+      block2 << "Zero element: #{m.zero_element}"
     else
       lz = (m.left_zeros.empty? ? ['none'] : m.left_zeros).join(',')
-      @out.puts "  Left-Zeros: #{lz}"
+      block2 << "  Left-Zeros: #{lz}"
       rz = (m.right_zeros.empty? ? ['none'] : m.right_zeros).join(',')
-      @out.puts " Right-Zeros: #{rz}"
+      block2 << " Right-Zeros: #{rz}"
     end
-    @out.puts
-    @out.puts "Green Relations:"
+    block2 << ''
+    block2 << ''
+    block2 << "GREEN RELATIONS:"
     lc = m.l_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
     rc = m.r_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
     hc = m.h_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
     dc = m.d_classes.map { |cl| '{' + cl.join(',') + '}' }.join(' ')
-    @out.puts "L-Classes: #{lc}"
-    @out.puts "R-Classes: #{rc}"
-    @out.puts "H-Classes: #{hc}"
-    @out.puts "D-Classes: #{dc}"
+    block2 << "L-Classes: #{lc}"
+    block2 << "R-Classes: #{rc}"
+    block2 << "H-Classes: #{hc}"
+    block2 << "D-Classes: #{dc}"
+    block2 << ''
+
+    @out.puts block1.zip(block2).map { |row| row.join('  ') }.join("\n")
     @out.puts
   end
 
-  def print_language(m,d,r)
-    @out.puts "Regular Expression: #{r.to_s}"
+  def print_language(m,d)
     @out.puts "\nDFA:\n#{d.to_s}\n"
-    @out.puts "\nMonoid:\n"
+    @out.puts "\nMONOID:\n"
     @out.puts binary_operation(m)
     @out.puts
   end

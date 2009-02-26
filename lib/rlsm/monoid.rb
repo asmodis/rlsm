@@ -637,9 +637,12 @@ Also if the monoid is syntactic the set returned by disjunctive subset will be u
       end
     end
 
-    RLSM::DFA.create(:initial => neutral_element,
-                     :finals => finals,
-                     :transitions => get_transitions)
+    dfa = RLSM::DFA.create(:initial => neutral_element,
+                           :finals => finals,
+                           :transitions => get_transitions)
+    dfa.rename_states
+
+    dfa
   end
 
   #Returns itself.
