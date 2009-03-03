@@ -170,7 +170,7 @@ class RLSM::RE
 
   def recursive_split(child, type)
     if type_of(child) == type
-      return self.send "split_#{type}".to_sym, child
+      return self.send("split_#{type}".to_sym, child)
     else
       return [child]
     end
