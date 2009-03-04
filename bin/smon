@@ -25,7 +25,7 @@ end
 begin
   opts.parse! ARGV
 
-  SMON.new ARGV, out
+  SMON.new :files =>ARGV, :messenger => out
 rescue => e
   STDERR.puts "Error: #{e.message}"
   STDERR.puts

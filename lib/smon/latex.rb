@@ -1,5 +1,27 @@
-module SmonLatex
-  def latex(obj, opts  = {})
+module SMONLIBlatex
+  def m2tex(monoid)
+    buffer = ['\begin{tabular}{' +
+               (['c']*(monoid.order+1)).join('|') + '|}']
+
+    buffer << ' & ' + monoid.binary_operation[0].map do |el|
+      "\\textbf{#{el}}"
+    end.join(' & ') + "\\\\ \\hline"
+
+    monoid.binary_operation.each do |row|
+      buffer << "\\textbf{#{row[0]}} & " + row.join(' & ') + "\\\\ \\hline"
+    end
+
+    buffer << ['\end{tabular}']
+    buffer.join("\n")
+  end
+
+  def d2tex(dfa)
+  end
+
+  def r2tex(re)
+  end
+
+  def tex_describe(obj, opts  = {})
     monoid = obj.to_monoid
 
     buffer = tex_binop(monoid)
@@ -138,21 +160,6 @@ module SmonLatex
     "\\ensuremath{#{str}}"
   end
 
-  def tex_binop(monoid)
-    buffer = ['\begin{tabular}{' +
-               (['c']*(monoid.order+1)).join('|') + '|}']
-
-    buffer << ' & ' + monoid.binary_operation[0].map do |el|
-      "\\textbf{#{el}}"
-    end.join(' & ') + "\\\\ \\hline"
-
-    monoid.binary_operation.each do |row|
-      buffer << "\\textbf{#{row[0]}} & " + row.join(' & ') + "\\\\ \\hline"
-    end
-
-    buffer << ['\end{tabular}']
-    buffer
-  end
 
   def tex_properties(m)
     buffer = ['\begin{tabular}{llcll}']

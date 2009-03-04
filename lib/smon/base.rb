@@ -45,7 +45,7 @@ module SMONLIBbase
     end
   end
 
-  
+
   def self.included(mod)
     #Setting up the help system
     mod.add_help :type => 'cmd',
@@ -116,7 +116,7 @@ The <re> parameter is simply a regular expression. Special Symbols are
  #{RLSM::RE::Lambda} -> the empty word
  #{RLSM::RE::Star} -> the Kleene star
  #{RLSM::RE::Union} -> the union of two regexps
- #{RLSM::RE::LeftBracket}, #{RLSM::RE::RigthBracket} -> Parenthesis to group a subregexp
+ #{RLSM::RE::LeftBracket}, #{RLSM::RE::RightBracket} -> Parenthesis to group a subregexp
 
 IMPORTANT: The <re> parameter must be enclosed in single or double quotes.
            Parentheses must be balanced.
@@ -134,7 +134,7 @@ DESC
 The optional <obj> parameter is either a monoid, a DFA or a RE.
 If none is given the last created object will be used.
 DESC
-    
+
     mod.add_help :type => 'cmd',
     :name => 'describe',
     :usage => "describe [<obj>]",

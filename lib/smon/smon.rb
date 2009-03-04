@@ -1,6 +1,8 @@
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rlsm'))
 
 class SMON
+  @@__help = {}
+
   def initialize(args = {:files => []})
     puts "Welcome to SMON (v#{RLSM::VERSION})"
 
@@ -12,18 +14,17 @@ class SMON
     else
       @loadpath = [File.dirname(__FILE__)]
     end
-    
+
     @objects = []
     @buffer = []
     @out_file = nil
     @__cmds = []
-    @__help = {}
 
     #Load all base libraries
     ['base', 'db', 'latex', 'dot'].each do |lib|
       process_command "libload '#{lib}'"
     end
-    
+
     #Select the mode
     if args[:files].empty?
       interactive_mode
@@ -59,24 +60,27 @@ class SMON
   def help(topic = nil)
     if topic
       t = topic.to_s
-      if @__help.key? t
-        @out.puts @__help[t][:summary]
-        @out.puts "\nUSAGE: " + @__help[t][:usage]
+      if @@__help.key? t
+        @out.puts @@__help[t][:summary]
+        @out.puts "\nUSAGE: " + @@__help[t][:usage]
         @out.puts
-        @out.puts @__help[t][:description]
+        @out.puts @@__help[t][:description]
       else
         @out.puts "No help for '#{t}' availible."
       end
     else
-      @out.puts "Listing not implemented."
-    end        
+      @@__help.each_pair do |name, desc|
+        @out.puts name.to_s + "\t" + desc[:summary]
+      end
+      @out.puts
+    end
   end
 
-  def add_help(desc)
+  def self.add_help(desc)
     name = desc.delete(:name).to_s
-    @__help[name] = desc
+    @@__help[name] = desc
   end
-  
+
   private
   def interactive_mode
     puts "Entering interactive mode."

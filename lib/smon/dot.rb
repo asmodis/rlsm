@@ -1,4 +1,4 @@
-module SmonDot
+module SMONLIBdot
   #Creates a picture of a DFA using dot.
   def dfa2pic(dfa)
     STDERR.puts "Not implemented."
