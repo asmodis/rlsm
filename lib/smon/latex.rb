@@ -1,3 +1,5 @@
+require 'enumerator'
+
 module SMONLIBlatex
   def m2tex(monoid)
     buffer = ['\begin{tabular}{' +
@@ -15,34 +17,82 @@ module SMONLIBlatex
     buffer.join("\n")
   end
 
-  def d2tex(dfa)
+  def d2tex(dfa, opts = {:dot => true})
+    #Have we dot support
+    if opts[:dot] #and @__cmds.include? "dfa2pic"
+      filename = SMON.tmp_filename
+      dfa2pic dfa, :filename => filename, :format => 'plain'
+      str = "\\begin{xy}\n0;<2.54cm,0cm>:\n"
+
+      edges = []
+      File.open(filename + ".plain", 'r').each_line do |line|
+        values = line.split
+        if ['edge','node'].include? values.first
+          str += tex_xy_node(values)
+        end
+        edges << tex_xy_edge(values) if values.first == 'edge'
+      end
+
+      str += edges.join("\n")
+      
+      return str + "\n\\end{xy}\n"
+    else
+      str = "\\begin{tabular}{r|" +
+        (['c']*dfa.alphabet.size).join('|') + "}\n"
+      str += " & " + dfa.alphabet.map do |l|
+        "\\textbf{#{l}}"
+      end.join(' & ') + " \\\\ \\hline\n"
+      dfa.states.each do |state|
+        tmp_str = ''
+        tmp_str += "\\ensuremath{*}" if dfa.finals.include? state
+        tmp_str += "\\ensuremath{\\rightarrow}" if dfa.initial_state == state
+        tmp_str += state + " & "
+        tmp_str += dfa.alphabet.map do |letter|
+          tmp = dfa[letter,state]
+          tmp ? tmp : 'nil'
+        end.join(' & ')
+        str+= tmp_str + " \\\\\n"
+      end
+
+      return str + "\\end{tabular}\n"
+    end
   end
 
   def r2tex(re)
+    re_str = re.pattern.
+      gsub(RLSM::RE::Lambda, "\\lambda ").
+      gsub(RLSM::RE::Union, "\\mid ").
+      gsub(RLSM::RE::Star, "^{*}")
+
+    "\\ensuremath{#{re_str}}"
   end
 
   def tex_describe(obj, opts  = {})
     monoid = obj.to_monoid
+    dfa = obj.to_dfa
+    
+    str = <<LATEX
+\\begin{tabular}{c|c}
+\\textbf{Binary Operation} & \\textbf{DFA} \\\\ \\hline
+#{m2tex(monoid)} & #{d2tex(dfa)}
+\\end{tabular}\\\\[2ex]
+#{tex_properties(monoid)}\\\\[2ex]
+#{tex_submonoids(monoid)}\\\\[2ex]
+#{monoid.syntactic? ? tex_syntactic_properties(monoid) : ''}
 
-    buffer = tex_binop(monoid)
-    buffer << "\\qquad"
-    buffer << tex_dfa(obj.to_dfa)
-    buffer << ""
-    buffer << "\\vspace*{.75\\baselineskip}"
-    buffer << ""
-    buffer += tex_properties(monoid)
-    buffer << ""
-    buffer << "\\vspace*{.75\\baselineskip}"
-    buffer << ""
-    buffer += tex_submonoids(monoid)
-    buffer << ""
-    buffer << "\\vspace*{.75\\baselineskip}"
-    buffer << ""
-    buffer += tex_syntactic_properties(monoid) if monoid.syntactic?
+LATEX
 
-    @out.puts buffer.join("\n") if @interactive
+    @out.puts str if @interactive
 
-    buffer.join("\n")
+    str
+  end
+
+  def tex_preamble
+    <<PREAMBLE
+\\documentclass[a4paper,DIV15,halfparskip*]{scrartcl}
+\\usepackage[frame,curves,arrow]{xy}
+\\usepackage{amsmath}
+PREAMBLE
   end
 
   def dvi(obj)
@@ -84,34 +134,6 @@ module SMONLIBlatex
   end
 
   private
-  def tex_dfa(dfa)
-    buffer = []
-    if @__cmds.include? 'dfa2pic'
-      buffer << "Not implemented"
-    else
-      buffer << "\\begin{tabular}{r|" +
-        (['c']*dfa.alphabet.size).join('|') + "}"
-      buffer << " & " + dfa.alphabet.map do |l|
-        "\\textbf{#{l}}"
-      end.join(' & ') + " \\\\ \\hline"
-      dfa.states.each do |state|
-        str = ''
-        str += "\\ensuremath{*}" if dfa.finals.include? state
-        str += "\\ensuremath{\\rightarrow}" if dfa.initial_state == state
-        str += state + " & "
-        str += dfa.alphabet.map do |letter|
-          tmp = dfa[letter,state]
-          tmp ? tmp : 'nil'
-        end.join(' & ')
-        buffer << str + " \\\\"
-      end
-
-      buffer << "\\end{tabular}"
-    end
-
-    buffer
-  end
-
   def clean_up(file)
     files = Dir.glob(file + ".*").reject { |f| f =~ /(dvi|pdf)$/ }
     files.each { |f| system("rm " + f) }
@@ -136,7 +158,7 @@ module SMONLIBlatex
       buffer << sm.join("\\quad\n")
     end
 
-    buffer
+    buffer.join("\n")
   end
 
   def tex_syntactic_properties(m)
@@ -149,15 +171,7 @@ module SMONLIBlatex
     end
     buffer << "\\end{tabular}"
 
-    buffer
-  end
-
-  def tex_re(re)
-    str = re.gsub(RLSM::RE::Union, "\\mid ").
-      gsub(RLSM::RE::Lambda, "\\lambda ").
-      gsub(RLSM::RE::Star, "^{*}")
-
-    "\\ensuremath{#{str}}"
+    buffer.join("\n")
   end
 
 
@@ -196,6 +210,39 @@ module SMONLIBlatex
     buffer << "Zero Element: & #{!m.zero_element.nil?} & \\quad & & \\\\"
     buffer << '\end{tabular}'
 
-    buffer
+    buffer.join("\n")
+  end
+
+  def tex_xy_node(n)
+    if n.first == 'edge'
+      return "" if n[1] == 'preinit'
+      
+      num_points = n[3].to_i
+      lable_pos = n[2*num_points + 5,2].join(',')
+      label = n[2*num_points + 4].gsub("\"",'')
+
+      return ";(#{lable_pos})*\\txt{#{label}}\n"
+    else
+      id = n[1]
+      xypos = n[2,2].join(',')
+      return  "(#{xypos})*{}=\"#{id}\"\n" if n[1] == 'preinit'
+      
+      label = n[6]
+      type = n[8] == 'circle' ? '' : '='
+
+      return ";(#{xypos})*+=[o]++[F#{type}]{#{label}}=\"#{id}\"\n"
+    end
+  end
+
+  def tex_xy_edge(e)
+    from, to = e[1,2]
+    num_points = e[3].to_i
+    points = points_to_str(e[4,2*num_points])
+    
+    "\\ar @`{#{points}} \"#{from}\";\"#{to}\""
+  end
+
+  def points_to_str(a)
+    "(" + a.enum_slice(2).to_a.map { |x| x.join(',') }.join('),(') + ")"
   end
 end

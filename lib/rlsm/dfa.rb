@@ -158,6 +158,16 @@ It is required that all occuring states are in the states array and all transiti
 
   attr_reader :alphabet, :states, :initial_state, :finals
 
+  #Returns an Array with 3-tuples as transitions.
+  def transitions
+    res = []
+    @alphabet.each do |letter|
+      res |= @transitions[letter].to_a.map { |x| [letter] + x }
+    end
+
+    res
+  end
+
   #Returns the number of states.
   def num_states
     @states.size

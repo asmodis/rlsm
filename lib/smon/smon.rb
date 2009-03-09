@@ -1,6 +1,15 @@
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rlsm'))
 
 class SMON
+  def self.tmp_filename
+    "tmp" + Time.now.to_s.gsub(/[ :+]/, '')
+  end
+
+  def self.add_help(desc)
+    name = desc.delete(:name).to_s
+    @@__help[name] = desc
+  end
+  
   @@__help = {}
 
   def initialize(args = {:files => []})
@@ -74,11 +83,6 @@ class SMON
       end
       @out.puts
     end
-  end
-
-  def self.add_help(desc)
-    name = desc.delete(:name).to_s
-    @@__help[name] = desc
   end
 
   private
