@@ -4,6 +4,7 @@ require 'optparse'
 
 Version = RLSM::VERSION
 out = STDOUT
+path = ""
 
 opts = OptionParser.new do |op|
   op.banner = <<USEAGE
@@ -13,6 +14,10 @@ starts in interactive mode.
 
 USEAGE
   op.separator("Options:")
+
+  op.on('-p','--path PATH', "Adds PATH to the loadpath for librarys.") do |p|
+    path = p
+  end
 
   op.on('-o', '--out FILE', "Output is redirected to FILE.") do |f|
     out = File.open(f, 'w')
@@ -25,7 +30,7 @@ end
 begin
   opts.parse! ARGV
 
-  SMON.new :files =>ARGV, :messenger => out
+  SMON.new :files =>ARGV, :messenger => out, :path => path
 rescue => e
   STDERR.puts "Error: #{e.message}"
   STDERR.puts

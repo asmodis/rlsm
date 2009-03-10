@@ -9,7 +9,7 @@ class SMON
     name = desc.delete(:name).to_s
     @@__help[name] = desc
   end
-  
+
   @@__help = {}
 
   def initialize(args = {:files => []})
@@ -19,15 +19,46 @@ class SMON
     @out = args[:messenger] || STDOUT
 
     if args[:path]
-      @loadpath = args[:path].split ':'
+      @loadpath = [File.expand_path(File.dirname(__FILE__))] +
+        args[:path].split(':').map { |f| File.expand_path(f) }
     else
-      @loadpath = [File.dirname(__FILE__)]
+      @loadpath = [File.expand_path(File.dirname(__FILE__))]
     end
 
     @objects = []
-    @buffer = []
-    @out_file = nil
     @__cmds = []
+
+    #Set up internal help system.
+    SMON.add_help :type => 'cmd',
+    :name => 'help',
+    :summary => 'Shows help for commands.',
+    :usage => 'help [<cmd>]',
+    :description => <<DESC
+If no argument is given, displays an overview of all availible
+commands.
+
+The optional <cmd> parameter should be a String or a Symbol, if given,
+displays the help to this command.
+DESC
+
+    SMON.add_help :type => 'cmd',
+    :name => 'exit',
+    :summary => 'Finishes the program.',
+    :usage => 'exit',
+    :description => <<DESC
+Finishes the program. Mostly  useful in interactive mode.
+DESC
+
+    SMON.add_help :type => 'cmd',
+    :name => 'libload',
+    :summary => 'Loads a library.',
+    :usage => 'libload <lib>',
+    :description => <<DESC
+Searches in the directorys listed in the @loadpath variable for a file
+called '<lib>.rb' or '<lib>' and includes it.
+
+The file content must be a module with name 'SMONLIB<lib>'.
+DESC
 
     #Load all base libraries
     ['base', 'db', 'latex', 'dot'].each do |lib|
@@ -60,6 +91,8 @@ class SMON
       self.class.class_eval "include SMONLIB#{lib}"
       STDERR.puts "I: Loaded #{lib}"
     end
+
+    @__cmds = find_all_commands
   end
 
   def method_missing(cmd, *args)
@@ -79,7 +112,7 @@ class SMON
       end
     else
       @@__help.each_pair do |name, desc|
-        @out.puts name.to_s + "\t" + desc[:summary]
+        @out.puts name.to_s + "\t\t" + desc[:summary]
       end
       @out.puts
     end
@@ -112,12 +145,15 @@ class SMON
     end
   end
 
+  def find_all_commands
+    ['exit'] + self.public_methods -
+      (Object.public_methods + ['method_missing'])
+  end
+
   def setup_readline
     require 'readline'
 
-    @__cmds = (self.public_methods + ['exit']) -
-      (Object.instance_methods + ['method_missing'])
-    if @__db
+    if @__cmds.include? 'db_stat'
       @__cmds += RLSM::MonoidDB::Columns.map { |x| x.inspect + " =>" }
     end
 

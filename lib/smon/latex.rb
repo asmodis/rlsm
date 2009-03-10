@@ -22,7 +22,7 @@ module SMONLIBlatex
     if opts[:dot] #and @__cmds.include? "dfa2pic"
       filename = SMON.tmp_filename
       dfa2pic dfa, :filename => filename, :format => 'plain'
-      str = "\\begin{xy}\n0;<2.54cm,0cm>:\n"
+      str = "\\begin{xy}\n0;<1.27cm,0cm>:\n"
 
       edges = []
       File.open(filename + ".plain", 'r').each_line do |line|
@@ -34,7 +34,9 @@ module SMONLIBlatex
       end
 
       str += edges.join("\n")
-      
+
+      File.delete(filename + ".plain")
+
       return str + "\n\\end{xy}\n"
     else
       str = "\\begin{tabular}{r|" +
@@ -67,12 +69,12 @@ module SMONLIBlatex
     "\\ensuremath{#{re_str}}"
   end
 
-  def tex_describe(obj, opts  = {})
+  def tex_describe(obj)
     monoid = obj.to_monoid
     dfa = obj.to_dfa
-    
+
     str = <<LATEX
-\\begin{tabular}{c|c}
+\\begin{tabular}[t]{c|c}
 \\textbf{Binary Operation} & \\textbf{DFA} \\\\ \\hline
 #{m2tex(monoid)} & #{d2tex(dfa)}
 \\end{tabular}\\\\[2ex]
@@ -90,47 +92,110 @@ LATEX
   def tex_preamble
     <<PREAMBLE
 \\documentclass[a4paper,DIV15,halfparskip*]{scrartcl}
-\\usepackage[frame,curves,arrow]{xy}
+\\usepackage[all]{xy}
 \\usepackage{amsmath}
+
+\\begin{document}
 PREAMBLE
   end
 
-  def dvi(obj)
-    str = "\\documentclass[a4paper,DIV15,halfparskip*]{scrartcl}\n"
-    str += "\\begin{document}\n"
-    str += latex(obj)
+  def compile(opts = {:format => 'dvi'})
+    str = tex_preamble
+    if opts[:object]
+      str += tex_describe(opts[:object])
+    else
+      str += opts[:input]
+    end
     str += "\n\\end{document}"
 
-    filename = "tmp" + Time.now.to_s.gsub(/[ :+]/, '')
+    filename = opts[:filename] || SMON.tmp_filename
+
     File.open(filename + ".tex", 'w') { |f| f.puts str }
 
-    system "latex -interaction=nonstopmode " + filename  + ".tex"
+    cmd = "latex -interaction=nonstopmode "
+    cmd += "-output-format=#{opts[:format]} " + filename  + ".tex"
+
+    system cmd
+
     clean_up filename
   end
 
-  def pdf(obj)
-    str = "\\documentclass[a4paper,DIV15,halfparskip*]{scrartcl}\n"
-    str += "\\begin{document}\n"
-    str += latex(obj)
-    str += "\n\\end{document}"
+  def self.included(mod)
+    unless system("which latex >/dev/null")
+      remove_method :complile
+      STDERR.puts "W: compile command disabled."
+    else
+      mod.add_help :type => 'cmd',
+      :name => 'compile',
+      :summary => 'Creates a dvi or pdf from the given string or object.',
+      :usage => 'compile <options>',
+      :description => <<DESC
+Possible options are
+ :input -> a String.
+           A string which contains a valid latex source file.
 
-    filename = "tmp" + Time.now.to_s.gsub(/[ :+]/, '')
-    File.open(filename + ".tex", 'w') { |f| f.puts str }
+ :object -> a DFA or Monoid or Regular Expression.
+            The object will be transformed using tex_describe
+            and then typsetted.
 
-    system "pdflatex -interaction=nonstopmode " + filename  + ".tex"
-    clean_up filename
-  end
+ :format -> a String.
+            Either 'dvi' or 'pdf'. Determines the output format of the
+            latex command.
 
-  def self.included(child)
-    unless system("which latex > /dev/null")
-      STDERR.puts "W: No 'latex' command found."
-      remove_method :dvi
+ :filename -> a String.
+              The filename of the output.
+DESC
     end
 
-    unless system("which pdflatex > /dev/null")
-      STDERR.puts "W: No 'pdflatex' command found."
-      remove_method :pdf
-    end
+    mod.add_help :type => 'cmd',
+    :name => 'm2tex',
+    :summary => 'Transforms a monoid to tex code.',
+    :usage => 'm2tex <monoid>',
+    :description => <<DESC
+Takes a monoid and returns a string containing tex code for
+representing the monoid in tex.
+DESC
+
+    mod.add_help :type => 'cmd',
+    :name => 'r2tex',
+    :summary => 'Transforms a regular expression to tex code.',
+    :usage => 'r2tex <re>',
+    :description => <<DESC
+Takes a regular expression and returns a string containing tex code for
+representing the regular expression in tex.
+DESC
+
+    mod.add_help :type => 'cmd',
+    :name => 'd2tex',
+    :summary => 'Transforms a DFA to tex code.',
+    :usage => 'd2tex <dfa> [<options>]',
+    :description => <<DESC
+Takes a DFA and returns a string containing tex code for
+representing the DFA in tex.
+
+Optional a parameter :dot can be given.
+ :dot -> true|false
+         If true and the dfa2pic command is found, uses dot and xy-pic
+         to genearte a graph for the DFA.
+         If false a simple table is used for representing the DFA.
+DESC
+
+    mod.add_help :type => 'cmd',
+    :name => 'tex_describe',
+    :summary => 'Returns tex code equivalent to the describe command.',
+    :usage => 'tex_describe <object>',
+    :description => <<DESC
+Takes an object and returns a string containing tex code for
+representing this object in tex. Focuses on the monoid properties.
+DESC
+
+    mod.add_help :type => 'cmd',
+    :name => 'tex_preamble',
+    :summary => 'Returns the tex preamble used by the compile command.',
+    :usage => 'tex_preamble',
+    :description => <<DESC
+Not very useful in interactive mode.
+DESC
   end
 
   private
@@ -149,7 +214,7 @@ PREAMBLE
   end
 
   def tex_submonoids(m)
-    sm = m.proper_submonoids.map { |s| tex_binop(s).join("\n") }
+    sm = m.proper_submonoids.map { |s| m2tex(s) }
     buffer = nil
     if sm.empty?
       buffer = ["\\textbf{Submonoids:} none"]
@@ -166,8 +231,8 @@ PREAMBLE
     buffer << "\\begin{tabular}{ll}"
     buffer << "Disjunctive Subset & Possible Regular Expression \\\\"
     m.all_disjunctive_subsets.each do |ds|
-      re = m.to_dfa(ds).to_re.to_s
-      buffer << set(ds) + " & " + tex_re(re) + "\\\\"
+      re = m.to_dfa(ds).to_re
+      buffer << set(ds) + " & " + r2tex(re) + "\\\\"
     end
     buffer << "\\end{tabular}"
 
@@ -216,17 +281,17 @@ PREAMBLE
   def tex_xy_node(n)
     if n.first == 'edge'
       return "" if n[1] == 'preinit'
-      
+
       num_points = n[3].to_i
       lable_pos = n[2*num_points + 5,2].join(',')
       label = n[2*num_points + 4].gsub("\"",'')
 
-      return ";(#{lable_pos})*\\txt{#{label}}\n"
+      return ";(#{lable_pos})*[r]\\txt{#{label}}\n"
     else
       id = n[1]
       xypos = n[2,2].join(',')
       return  "(#{xypos})*{}=\"#{id}\"\n" if n[1] == 'preinit'
-      
+
       label = n[6]
       type = n[8] == 'circle' ? '' : '='
 
@@ -238,7 +303,7 @@ PREAMBLE
     from, to = e[1,2]
     num_points = e[3].to_i
     points = points_to_str(e[4,2*num_points])
-    
+
     "\\ar @`{#{points}} \"#{from}\";\"#{to}\""
   end
 

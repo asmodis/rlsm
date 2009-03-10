@@ -84,6 +84,9 @@ The optional <options> parameter is a Hash and can take the following keys:
                the generating elements will be moved to the beginning.
  :rename    -> true|false
                If true, the elements ill be renamed to 1 a b c ...
+
+Adds the  created monoid to the @objects array
+and sets the variable @monoid to the created monoid.
 DESC
 
     mod.add_help :type => 'cmd',
@@ -105,6 +108,9 @@ The <hash> parameter must have the following keys:
 
 EXAMPLE:
 dfa :initial => '0', :finals => ['1'], :transitions => [['a','0','1']]
+
+Adds the  created DFA to the @objects array
+and sets the variable @dfa to the created DFA.
 DESC
 
     mod.add_help :type => 'cmd',
@@ -123,7 +129,11 @@ IMPORTANT: The <re> parameter must be enclosed in single or double quotes.
 
 EXAMPLES:
 regexp 'a'
-regexp '#{RLSM::RE::Lambda}#{RLSM::RE::Union}#{RLSM::RE::LeftBracket}a#{RLSM::RE::Union}aab#{RLSM::RE::Star}#{RLSM::RE::RightBracket}'
+regexp
+'#{RLSM::RE::Lambda}#{RLSM::RE::Union}#{RLSM::RE::LeftBracket}a#{RLSM::RE::Union}aab#{RLSM::RE::Star}#{RLSM::RE::RightBracket}'
+
+Adds the  created regular expression to the @objects array
+and sets the variable @re to the created regular expression.
 DESC
 
     mod.add_help :type => 'cmd',

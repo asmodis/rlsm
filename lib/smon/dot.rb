@@ -10,6 +10,7 @@ module SMONLIBdot
   #Creates string which is a dot representation of a DFA.
   def dfa2dot(dfa)
     str = "digraph {\n"
+    str += "size=\"2,2\"\nratio=1.0\n"
     str += "node [shape=circle]\n"
     str += "preinit [shape=plaintext, label=\"\"]\n"
     (dfa.states - dfa.finals).each do |state|
@@ -27,14 +28,38 @@ module SMONLIBdot
         str += s1 + "->" + s2 + "[label=\"#{label}\"]\n"
       end
     end
-    
+
     str + "}"
   end
 
-  def self.included(child)
+  def self.included(mod)
     unless system("which dot > /dev/null")
       remove_method :dfa2pic
       STDERR.puts "W: No 'dot' command found."
+    else
+      mod.add_help :type => 'cmd',
+      :name => 'dfa2pic',
+      :summary => 'Creates a picture of a DFA using dot.',
+      :usage => 'dfa2pic <dfa> [<options>]',
+      :description => <<DESC
+The parameter <dfa> is a DFA which will be transformed with the dot program.
+Possible optional parameters are
+ :format -> a String.
+            The output format. Defaults to 'png'. Could be all what dot
+            accepts.
+
+ :filename -> a String.
+              The filename of the output.
+DESC
     end
+
+    mod.add_help :type => 'cmd',
+      :name => 'dfa2dot',
+      :summary => 'Creates a string with dot commands.',
+      :usage => 'dfa2pic <dfa>',
+      :description => <<DESC
+The parameter <dfa> is a DFA which will be transformed to a string
+which is a valid dot description of a digraph.
+DESC
   end
 end
