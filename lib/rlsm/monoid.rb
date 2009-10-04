@@ -1,790 +1,550 @@
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rlsm'))
+require File.join(File.dirname(__FILE__), 'helper')
+require File.join(File.dirname(__FILE__), 'binary_operation')
+require File.join(File.dirname(__FILE__), 'dfa')
+RLSM::require_extension 'array'
+RLSM::require_extension 'monoid'
 
-=begin rdoc
-=The RLSM::Monoid class
-===Definition of a monoid
-A _monoid_ is a tuple <tt>(M,B)</tt> where
-* +M+ is a set of _elements_
-* <tt>B:M x M -> M</tt> is a _binary_ _operation_
-with the following properties
-* the binary operation is associative ( <tt>B(a,B(b,c)) = B(B(a,b),c)</tt> for all <tt>a,b,c</tt> in +M+)
-* It exists an element +e+ in +M+ with <tt>B(a,e) = B(e,a) = a</tt> for all +a+ in +M+ (the neutral element).
+module RLSM
+  class Monoid
+    private_class_method :new
 
-In theory the set +M+ may be of infinite size, but for obvious reasons we consider here only the finite case. The size of +M+ is called the _order_ of the monoid.
+    def self.each(order)
+      raise ArgumentError, "Given order must be > 0" if order <= 0
 
-Also we denote the product of two elements by
+      if order == 1  #trivial case
+        yield new(RLSM::BinaryOperation.original_new([0], ['0'], { '0' => 0}))
+        return
+      end
 
- B(x,y) =: xy
+      elements = (0...order).to_a.map { |x| x.to_s }
+      mapping = {}
+      elements.each_with_index { |x,i| mapping[x] = i }
 
+      #calculate the permutations once
+      permutations = (1...order).to_a.permutations.map { |p| p.unshift 0 }
 
-===A word on the binary operation
-Suppose that <tt>M = {e,b,c}</tt>. We can describe the binary operation as a table, for example
-
-    | e | a | b |  <-- this row gives only a correspondence between
- ---+---+---+---+      columns and monoid elements (analog the first column,
-  e | e | a | b |      which gives a correspondence between rows and elements).
- ---+---+---+---+
-  a | a | a | b |
- ---+---+---+---+
-  b | b | a | b |
- ---+---+---+---+
-
-For two elements <tt>x,y</tt>, the product +xy+ can be looked up in the table as follows: Say <tt>x = a</tt> and <tt>y = b</tt> the product +ab+ is then the entry in row +a+ and column +b+ (in this case it is +b+).
-
-This gives us an easy way to express a binary operation in code. It is simply a 2D-array. We see immediatly two restrictions:
-* Ignoring the descreptive first row and first column, the array must be quadratic
-* Each entry must be a monoid element
-
-If we now agree upon the convention that the first row and column belongs to the neutral element, we can discard the row and column description because of the fact, that in this case the first row and column are identical with the descriptions (compare above example).
-
-===Basic properties of monoids and monoid elements
-Given two monoids <tt>(M,B), (N,C)</tt> we say the monoids are _isomorph_ _to_ each other iff there exists a bijective map <tt>I : M -> N</tt> such that the equality
- I(B(x,y)) = C(I(x),I(y))
-holds for all <tt>x,y</tt> in +M+. The map +I+ is then called an _isomorphism_.
-
-The monoids are _anti_-_isomorph_ _to_ each other iff there exists a bijective map <tt>A : M -> N </tt>  such that the equality
- A(B(x,y)) = C(A(y),A(x))
-holds for all <tt>x,y</tt> in +M+. The map +A+ is then called an _anti_-_isomorphism_.
-
-We say a monoid <tt>(M,B)</tt> is _commutative_ iff the equality
- B(x,y) = B(y,x)
-holds for all <tt>x,y</tt> in +M+.
-
-An element +l+ of +M+ is called a _left_-_zero_ iff for all +x+ in +M+
- lx = l
-holds. An element +r+ of +M+ is called a _right_-_zero_ iff for all +x+ in +M+
- xr = r
-holds. An element +z+ of +M+ is called a _zero_ _element_ iff for all +x+ in +M+
- zx = xz = z
-holds. If it exists, the zero element is unique.
-
-An element +a+ of +M+ is called a _idempotent_ iff <tt>xx = x</tt>. A monoid +M+ is called _idempotent_ if all elements are idempotent.
-
-It is easy to see that a monoid is a group (i.e. for all elements +x+ there exists an element +y+ such that <tt>xy = yx = 1</tt> where +1+ is the neutral element) if the neutral element is the only idempotent element.
-
-===Submonoids and generators
-Given two monoids <tt>(M,B), (N,C)</tt> we say +M+ is a _submonoid_ of +N+ iff there exists an injective map <tt>S : M -> N</tt> such that the equality
- S(B(x,y)) = C(S(x),S(y))
-holds for all <tt>x,y</tt> in +M+ and +M+ is a subset of +N+.
-
-A submonoid +N+ of +M+ is called a _proper_ _submonoid_ if <tt>N != M</tt> and +N+ has more than one element.
-
-Let <tt>(M,B)</tt> with <tt>M = {m1,m2,m3,...}</tt> be a monoid and <tt>N = {n1,n2,...}</tt> be a subset of +M+. Then the set
- <N> := { x | x is the product of arbitary powers of elements in N }
-is a submonoid of +M+ with +B+ restricted to <tt>NxN</tt>. It is called the submonoid _generated_ _by_ +N+ and +N+ is called the _generator_.
-
-A _generating_ _subset_ of a Monoid +M+ is a subset +N+ of +M+ such that <tt><N>=M</tt>.
-
-===Ideals of a monoid and Green Relations
-Let +M+ be a monoid and +a+ in +M+. We define
- Ma  := {xa | x in M}
- aM  := {ax | x in M}
- MaM := {xay | x,y in M}
-and call +Ma+ the _left_ _ideal_ of +a+, +aM+ the _right_ _ideal_ of +a+ and +MaM+ the (_two_-_sided_) _ideal_ of +a+.
-
-We can now define some equivalent relations on +M+:
- a =L= b :<=> Ma = Mb
- a =R= b :<=> aM = bM
- a =J= b :<=> MaM = MbM
- a =H= b :<=> a =L= b and a =R= b
- a =D= b :<=> it exists a c in +M+ such that a =L= c and c =R= b
-These relations are called the _Green_-_relations_ of the monoid +M+.
-
-The relations =J= and =D= are the same for finite monoids, so we consider here only the relation =D=.
-
-The equivalence classes of these relations are called _L_-_class_, _R_-_class_,_J_-_class_,_H_-_class_ and _D_-_class_.
-
-A monoid is called _L_-_trivial_ iff all L-classes contains only one element. Analog for _R_,_J_,_H_,_D_-_trivial_.
-
-===Disjunctive subsets and syntactic monoids.
-A subset +D+ of a monoid +M+ is called a _disjunctive_ _subset_ iff for all <tt>a,b</tt> in +M+ with <tt>a != b</tt> a 'context' <tt>x,y</tt> in +M+ exists such that
- (xay in N and xby not in N) or vice versa
-
-A monoid is called a _syntactic_ _monoid_ iff it has a disjunctive subset.
-
-These definitions are motivated by the formal language theory in theoretical computer science. There one can define the _syntactic_ _monoid_ of a language as the factor monoid given by a congruence relation which depends on the language. It is shown that a monoid is syntactic in this sense iff it has a disjunctive subset.
-
-Also it is shown that the syntactic monoid of a language is finite iff the language is regular.
-=end
-
-class RLSM::Monoid
-=begin rdoc
-The new method takes two parameters: the binary_operation and an (more or less) optional options hash.
-
-The +binary_operation+ parameter should be either an array or a string.
-If it is an array it must satisfy the following conditions:
-
-* It is a two dimensional array and the rows are also arrays.
-* It is quadratic.
-* Each entry is an element of the monoid
-* The first row and column belongs to the neutral element
-
-If +binary_operation+ is a string, it must be of the form
-
- 1abc aabc babc cabc
-
-Such a string will be transformed in a 2D-array in the following way:
-1. Each row is seperated by a space
-2. In a row elements are seperated by ',' (comma) or each element consists of exactly one character (as in the above example)
-
-The above example will be transformed to
- [['1','a','b','c'],['a','a','b','c'],['b','a','b','c'],['c','a','b','c']]
-After the transformation, the same rules as for an array parameter applies.
-
-Remark: The elements will always converted to a string, even if given an array with only numeric values. So multiplication will always be performed on strings.
-
-The optional options hash knows the following keys.
-[<tt>:elements</tt>] Takes an array as value and calls elements= with this array after the construction is complete.
-[<tt>:normalize</tt>] If given non-nil and non-false value, the normalize method will be called after construction.
-[<tt>:rename</tt>]If given non-nil and non-false value, the rename_elements method will be called after construction.
-
-Other keys will be ignored and the order in which the methods will be called is
- normalize rename elements
-=end
-  def initialize(binary_operation, options = {})
-    @binary_operation = get_binary_operation_from binary_operation
-    @elements = @binary_operation.first.uniq unless @binary_operation.empty?
-    @order = @binary_operation.size
-
-    validate
-
-    normalize if options[:normalize]
-    rename_elements if options[:rename]
-    self.elements = options[:elements] if options[:elements]
-  end
-
-  attr_reader :binary_operation, :elements, :order
-
-=begin rdoc
-Returns the product of the given elements. Raises a MonoidException if one of the arguments isn't a monoid element.
-=end
-  def [](*args)
-    args.flatten!
-    check_args(args)
-
-    if args.size == 2
-      x,y = args[0], args[1]
-      return @binary_operation[@elements.index(x)][@elements.index(y)]
-    else
-      args[0,2] = self[args[0,2]]
-      return self[*args]
-    end
-  end
-
-=begin rdoc
-Checks if this monoid is isomorph to +other+, if so returns true.
-=end
-  def isomorph_to?(other)
-    #First a trivial check
-    return false if @order != other.order
-
-    #Search now an isomorphism
-    iso = @elements.permutations.find do |p|
-      @elements.product(@elements).all? do |x,y|
-        px, py = other.elements[p.index(x)], other.elements[p.index(y)]
-
-        other.elements[p.index(self[x,y])] == other[px,py]
+      each_diagonal(order,permutations) do |diagonal|
+        each_with_diagonal(diagonal,permutations) do |table|
+          yield new(RLSM::BinaryOperation.original_new(table, elements, mapping))
+        end
       end
     end
 
-    #Did we found an isomorphism?
-    !iso.nil?
-  end
+    
+    attr_accessor :elements, :order, :binary_operation
 
-=begin rdoc
-Checks if this monoid is anti-isomorph to  +other+, if so returns true.
-=end
-  def anti_isomorph_to?(other)
-    transposed = (0...@order).map do |i|
-      @binary_operation.map { |row| row[i].clone }
+    #Like new, but without validation.
+    def self.new!(description)
+      new RLSM::BinaryOperation.new!(description)
     end
 
-    RLSM::Monoid.new(transposed).isomorph_to?(other)
-  end
-
-=begin rdoc
-Checks if the monoid is equal to +other+, i.e. the identity map is an isomorphism.
-=end
-  def ==(other)
-    return false unless @elements == other.elements
-    return false unless @binary_operation == other.binary_operation
-
-    true
-  end
-
-=begin rdoc
-Checks if the monoid is commutative, if so returns true.
-=end
-  def commutative?
-    @elements.product(@elements).all? { |x,y| self[x,y] == self[y,x] }
-  end
-
-=begin rdoc
-Returns the submonoid which is generated by the given elements. If one of the given  elements isn't a monoid element, an MonoidException is raised.
-=end
-  def get_submonoid(*args)
-    element_indices = get_closure_of(args).map { |x| @elements.index(x) }
-
-    RLSM::Monoid.new(@binary_operation.values_at(*element_indices).
-                     map { |r| r.values_at *element_indices } )
-  end
-
-=begin rdoc
-Returns an array of all submonoids of this monoid. The array is sorted in lexicographical order of the submonoid elements.
-=end
-  def submonoids
-    @elements.powerset.map { |s| get_closure_of(s) }.uniq.sort_lex.map do |s|
-      get_submonoid(s)
-    end
-  end
-
-=begin rdoc
-Returns an array of all proper submonoids of this monoid. The array is sorted in lexicographical order of the submonoid elements.
-=end
-  def proper_submonoids
-    submonoids.reject { |m| [1,@order].include? m.order }
-  end
-
-=begin rdoc
-Returns true if this monoid is a submonoid of +other+.
-=end
-  def submonoid_of?(other)
-    other.submonoids.include? self
-  end
-
-  #A synonym for submonoid_of?
-  def <=(other)
-    submonoid_of?(other)
-  end
-
-=begin rdoc
-Returns true if this monoid is a proper submonoid of +other+.
-=end
-  def proper_submonoid_of?(other)
-    other.proper_submonoids.include? self
-  end
-
-  #A synonym for proper_submonoid_of?
-  def <(other)
-    proper_submonoid_of?(other)
-  end
-
-=begin rdoc
-Returns true if this monoid has +other+ as a submonoid
-=end
-  def has_as_submonoid?(other)
-    other.submonoid_of?(self)
-  end
-
-  #A synonym for has_as_submonoid?
-  def >=(other)
-    has_as_submonoid?(other)
-  end
-
-=begin rdoc
-Returns true if this monoid has +other+ as a proper submonoid
-=end
-  def has_as_proper_submonoid?(other)
-    other.proper_submonoid_of?(self)
-  end
-
-  #A synonym for has_as_proper_submonoid?
-  def >(other)
-    has_as_proper_submonoid?(other)
-  end
-
-=begin rdoc
-Returns the lexicographical smallest subset which generates the monoid
-=end
-  def generating_subset
-    @elements.powerset.find { |s| get_closure_of(s).size == @order }
-  end
-
-=begin rdoc
-Returns the right ideal of the given element. Raises a MonoidException if the given element isn't in the monoid.
-=end
-  def right_ideal_of(element)
-    check_args(element)
-
-    @binary_operation[@elements.index(element)].uniq.sort
-  end
-
-=begin rdoc
-Returns the left ideal of the given element. Raises a MonoidException if the given element isn't in the monoid.
-=end
-  def left_ideal_of(element)
-    check_args(element)
-
-    i = @elements.index(element)
-    @binary_operation.map { |row| row[i] }.uniq.sort
-  end
-
-=begin rdoc
-Returns the (two-sided) ideal of the given element. Raises a MonoidException if the given element isn't in the monoid.
-=end
-  def ideal_of(element)
-    @elements.product(@elements).inject([]) do |res,xy|
-      x,y = xy.first, xy.last
-      res << self[x,element,y] unless res.include? self[x,element,y]
-      res.sort
-    end
-  end
-
-=begin rdoc
-Returns the L-class of the given element. Raises a MonoidException if the given element isn't a monoid element.
-=end
-  def l_class_of(element)
-    l = left_ideal_of(element)
-    @elements.select { |x| left_ideal_of(x) == l }
-  end
-
-=begin rdoc
-Returns all different L-classes of the monoid ordered by the lexicographical smallest element of each class
-=end
-  def l_classes
-    @elements.map { |x| l_class_of(x) }.uniq
-  end
-
-=begin rdoc
-Returns true if the monoid is L-trivial.
-=end
-  def l_trivial?
-    l_classes.all? { |l| l.size == 1 }
-  end
-
-=begin rdoc
-Returns the R-class of the given element. Raises a MonoidException if the given element isn't a monoid element.
-=end
-  def r_class_of(element)
-    r = right_ideal_of(element)
-    @elements.select { |x| right_ideal_of(x) == r }
-  end
-=begin rdoc
-Returns all different R-classes of the monoid ordered by the lexicographical smallest element of each class
-=end
-  def r_classes
-    @elements.map { |x| r_class_of(x) }.uniq
-  end
-
-=begin rdoc
-Returns true if the monoid is R-trivial.
-=end
-  def r_trivial?
-    r_classes.all? { |r| r.size == 1 }
-  end
-
-=begin rdoc
-Returns the H-class of the given element. Raises a MonoidException if the given element isn't a monoid element.
-=end
-  def h_class_of(element)
-    l_class_of(element) & r_class_of(element)
-  end
-
-=begin rdoc
-Returns all different H-classes of the monoid ordered by the lexicographical smallest element of each class
-=end
-  def h_classes
-    @elements.map { |x| h_class_of(x) }.uniq
-  end
-
-=begin rdoc
-Returns true if the monoid is H-trivial.
-=end
-  def h_trivial?
-    h_classes.all? { |h| h.size == 1 }
-  end
-
-=begin rdoc
-Returns the D-class of the given element. Raises a MonoidException if the given element isn't a monoid element.
-=end
-  def d_class_of(element)
-    d = ideal_of(element)
-    @elements.select { |x| ideal_of(x) == d }
-  end
-
-=begin rdoc
-Returns all different D-classes of the monoid ordered by the lexicographical smallest element of each class
-=end
-  def d_classes
-    @elements.map { |x| d_class_of(x) }.uniq
-  end
-
-=begin rdoc
-Returns true if the monoid is D-trivial.
-=end
-  def d_trivial?
-    d_classes.all? { |d| d.size == 1 }
-  end
-
-  #Synonym for d_class_of (in a finite monoid =D= is the same as =J=)
-  def j_class_of(element)
-    d_class_of(element)
-  end
-
-  #Synonym for d_classes (in a finite monoid =D= is the same as =J=)
-  def j_classes
-    d_classes
-  end
-
-  #Synonym for d_trivial? (in a finite monoid =D= is the same as =J=)
-  def j_trivial?
-    d_trivial?
-  end
-
-=begin rdoc
-Returns true if the given element is idempotent.
-=end
-  def idempotent?(x = nil)
-    x ? x == self[x,x] : @elements.all? { |x| idempotent?(x) }
-  end
-
-=begin rdoc
-Returns all idempotent elements of the monoid.
-=end
-  def idempotents
-    @elements.select { |x| idempotent?(x) }
-  end
-
-=begin rdoc
-Returns true if the monoid is also a group.
-=end
-  def group?
-    idempotents.size == 1
-  end
-
-=begin rdoc
-Returns true if the given element is a left zero. Raises a MonoidException if the given element isn't a monoid element.
-=end
-  def left_zero?(element)
-    return false if @order == 1
-    @elements.all? { |x| self[element,x] == element }
-  end
-
-=begin rdoc
-Returns all left zeros of the monoid.
-=end
-  def left_zeros
-    @elements.select { |x| left_zero?(x) }
-  end
-
-=begin rdoc
-Returns true if the given element is a right zero. Raises a MonoidException if the given element isn't a monoid element.
-=end
-  def right_zero?(element)
-    return false if @order == 1
-    @elements.all? { |x| self[x,element] == element }
-  end
-
-=begin rdoc
-Returns all right zeros of the monoid.
-=end
-  def right_zeros
-    @elements.select { |x| right_zero?(x) }
-  end
-
-=begin rdoc
-Returns the neutral element.
-=end
-  def neutral_element
-    @elements.first.dup
-  end
-
-=begin rdoc
-Returns the zero element if it exists, nil otherwise.
-=end
-  def zero_element
-    @elements.find { |x| left_zero?(x) and right_zero?(x) }
-  end
-
-
-=begin rdoc
-Returns true if the given set (as an array) is disjunctive.
-=end
-  def subset_disjunctive?(set)
-    check_args(set)
-
-    tup = @elements.product(@elements)
-
-    tup.all? do |a,b|
-      a == b or tup.any? do |x,y|
-        set.include?(self[x,a,y]) ^ set.include?(self[x,b,y])
-      end
-    end
-  end
-
-=begin rdoc
-Returns the lexicographical smallest subset which is disjunctive.
-=end
-  def disjunctive_subset
-    @elements.powerset.find { |s| subset_disjunctive? s }
-  end
-
-=begin rdoc
-Returns all disjunctive subsets of the monoid in lexicographical order.
-=end
-  def all_disjunctive_subsets
-    @elements.powerset.select { |s| subset_disjunctive? s }
-  end
-
-=begin rdoc
-Returns true if the monoid is syntactic.
-=end
-  def syntactic?
-    !disjunctive_subset.nil?
-  end
-
-=begin rdoc
-Returns true if the monoid is aperiodic. (A synonym for h_trivial?)
-=end
-  def aperiodic?
-    h_trivial?
-  end
-
-  def to_s # :nodoc:
-    sep = ''
-    sep = ',' if @elements.any? { |x| x.length > 1 }
-    @binary_operation.map { |row| row.join(sep) }.join(' ')
-  end
-
-  def inspect # :nodoc:
-    "<#{self.class}: #{to_s}>"
-  end
-
-=begin rdoc
-Arranges the elements in such a way that the generators follows directly the  neutral element.
-=end
-  def normalize
-    #new element order
-    elements =
-      [@elements.first] +
-      generating_subset +
-      (@elements[(1..-1)] - generating_subset)
-
-    indices = elements.map { |x| @elements.index(x) }
-
-    #Adjust the binaray operation
-    @binary_operation = @binary_operation.values_at(*indices).map do |row|
-      row.values_at(*indices)
-    end
-
-    #Adjust the elements
-    @elements = elements
-
-    self
-  end
-
-=begin rdoc
-Renames the elements to 1,a,b,c,d,e,... (see also elements=). It may be a little bit confusing if the monoid has more than 27 elements, because then the 28th element is named 'aa' which should not confused with the product in the monoid.
-=end
-  def rename_elements
-    #Create the new elements
-    eles = ['1']
-    if @order > 1
-      eles << 'a'
-      eles << eles.last.succ while eles.size < @order
-    end
-
-    self.elements = eles
-    self
-  end
-
-=begin rdoc
-Renames the elements to the given array. Each array entry will be converted to a string.
-
-A MonoidException will be raised if
-* the given array has the wrong size
-* the given array has duplicated elements (e.g. ['a','b','a'])
-=end
-  def elements=(els)
-    els.map! { |x| x.to_s }
-
-    if els.size != @order
-      raise MonoidException, "Wrong number of elements given!"
-    elsif els.uniq!
-      raise MonoidException, "Given elements aren't unique!"
+    #Creates a Monoid with the binary operation described in +description+. 
+    #Validates that the BinaryOperation is assoviative and the neutral element 
+    #is in the first row.
+    #
+    #See also BinaryOperation::new.
+    def self.[](description)
+      binop = RLSM::BinaryOperation.new(description)
+      binop.enforce_associativity
+      enforce_identity_position(binop.table, binop.order)
+
+      new(binop)
     end
 
 
+    #:notnew:
+    #*Remark*: No validation is performed. Use it only when you're really know what to do.
+    #Use Monoid::[] instead (or Monoid::new!).
+    def initialize(binop)
+      @binary_operation = binop
+      @elements = @binary_operation.elements
+      @order = @elements.size
 
-    @binary_operation.map! do |row|
-      row.map { |x| els[@elements.index(x)] }
+      instance_eval(&block) if block_given?
     end
 
-    @elements = els
-  end
-=begin rdoc
-Returns a DFA which has the elements as states, the binary operation as transitions and the neutral element as initial state.
-
-As optional parameter one may pass an array of elements which should become the final states. If the monoid is syntactic, these finals must be a disjunctive subset.
-
-Also if the monoid is syntactic the set returned by disjunctive subset will be used as the finals as default.
-=end
-  def to_dfa(finals = [])
-    check_args *finals
-    if generating_subset == []
-      return RLSM::DFA.new(:alphabet => [], :states => @elements,
-                           :initial => neutral_element,
-                           :finals => finals, :transitions => [])
-    end
-
-    if syntactic?
-      if finals.empty?
-        finals = disjunctive_subset
+    #Calculates the product of the given elements.
+    def [](*args)
+      case args.size
+      when 0,1
+        raise ArgumentError, "At least two elements must be provided."
+      when 2
+        @binary_operation[*args]
       else
-        unless all_disjunctive_subsets.include? finals.sort
-          raise MonoidException, "Given finals aren't a disjunctive subset."
+        args[0,2] = @binary_operation[args[0],args[1]]
+        self[*args]
+      end
+    end
+
+    #Two monoids are equal if they have the same binary operation on the same set.
+    def ==(other)
+      return nil unless RLSM::Monoid === other
+
+      @binary_operation.table == other.binary_operation.table and
+        @binary_operation.elements == other.binary_operation.elements
+    end
+
+    #Checks if +self+ is a proper submonoid of +other+.
+    def <(other)
+      return nil unless RLSM::Monoid === other
+      return false if @order >= other.order
+
+      @elements.each do |e1|
+        @elements.each do |e2|
+          begin
+            return false if self[e1,e2] != other[e1,e2]
+          rescue BinOpError
+            return false
+          end
+        end
+      end
+
+      true
+    end
+
+    #Checks if +self+ is a submonoid of (or equal to) +other+.
+    def <=(other)
+      (self == other) || (self < other)
+    end
+
+    def >(other) #:nodoc:
+      other < self
+    end
+
+    def >=(other) #:nodoc:
+      other <= self
+    end
+
+    #Returns the submonoid generated by +set+.
+    #
+    #*Remark*: The returned value is only an Array, no Monoid. Use get_submonoid for this.
+    def generated_set(set)
+      if set.include? @elements.first
+        gen_set = set.map { |element| element.to_s }
+      else
+        gen_set = set.map { |element| element.to_s } | @elements[0,1]
+      end
+
+      unfinished = true
+      
+      while unfinished
+        unfinished = false
+
+        gen_set.each do |el1|
+          gen_set.each do |el2|
+            element = self[el1,el2]
+            unless gen_set.include? element
+              gen_set << element
+              unfinished = true
+            end
+          end
+        end
+      end
+        
+      gen_set.sort(&element_sorter)
+    end
+
+    #Returns the submonoid generated by set.
+    def get_submonoid(set)
+      elements = generated_set(set)
+
+      set_to_monoid(elements)
+    end
+
+    #Returns an array of all submonoids (including the trivial monoid and the monoid itself).
+    def submonoids
+      candidates = get_submonoid_candidates
+      candidates.map { |set| set_to_monoid(set) }
+    end
+
+    #Returns an array of all proper submonoids. 
+    def proper_submonoids
+      candidates = get_submonoid_candidates.select do |cand| 
+        cand.size > 1 and cand.size < @order 
+      end
+
+      candidates.map { |set| set_to_monoid(set) }
+    end
+
+    #Returns the smallest set (first in terms of cardinality, then lexicographically) which generates the monoid.
+    def generating_subset
+      sorted_subsets.find { |set| generated_set(set).size == @order }
+    end
+
+    #Checks if +self+ is isomorph to +other+ 
+    def =~(other)
+      bijective_maps_to(other).any? { |map| isomorphism?(map,other) }
+    end
+
+    #Synonym for =~
+    def isomorph?(other)
+      self =~ other
+    end
+
+    #Checks if +self+ is antiisomorph to +other+.
+    def antiisomorph?(other)
+      bijective_maps_to(other).any? { |map| antiisomorphism?(map,other) }
+    end
+
+    #If an argument is given, checks if this element is idempotent. Otherwise checks if the monoid itself is idempotent.
+    def idempotent?(element = nil)
+      if element
+        self[element,element] == element
+      else
+        @elements.all? { |el| idempotent?(el) }
+      end
+    end
+
+    #Returns the order of an element.
+    def order_of(element)
+      generated_set([element]).size
+    end
+
+    #Returns the principal right ideal of the element.
+    def right_ideal(element)
+      @elements.map { |el| self[element,el] }.uniq.sort(&element_sorter)
+    end
+
+    #Returns the principal left ideal of the element.
+    def left_ideal(element)
+      @elements.map { |el| self[el,element] }.uniq.sort(&element_sorter)
+    end
+
+    #Returns the principal (twosided) ideal of the element.
+    def ideal(element)
+      result = []
+      @elements.each do |el1|
+        @elements.each do |el2|
+          result << self[el1,element,el2]
+        end
+      end
+
+      result.uniq.sort(&element_sorter)
+    end
+
+    #Returns the neutral element of the monoid.
+    def identity
+      @elements.first
+    end
+
+    #Checks if +element+ is the neutral element.
+    def identity?(element)
+      element == identity
+    end
+
+    #If a argument is given, checks if +element+ is the zero element. If no arguement is given, checks if a zero element exists.
+    def zero?(element = nil)
+      if element
+        return false if @order == 1
+        @elements.all? do |el| 
+          self[el,element] == element and self[element,el] == element
+        end
+      else
+        !!zero
+      end
+    end
+
+    #Returns the zero element if it exists. Return +nil+ if no zero element exists.
+    def zero
+      @elements.find { |el| zero?(el) }
+    end
+
+    #Checks if +element+ is a left zero element.
+    def left_zero?(element)
+      return false if @order == 1
+      @elements.all? { |x| self[element,x] == element }
+    end
+
+    #Checks if +element+ is a right zero element.
+    def right_zero?(element)
+      return false if @order == 1
+      @elements.all? { |x| self[x,element] == element }
+    end
+
+    #Returns an array with all right zero elements.
+    def right_zeros
+      @elements.select { |el| right_zero?(el) }
+    end
+
+    #Returns an array with all left zero elements.
+    def left_zeros
+      @elements.select { |el| left_zero?(el) }
+    end
+
+    #Returns an array with all idempotent elements.
+    def idempotents
+      @elements.select { |el| idempotent?(el) }
+    end
+
+    #Checks if the monoid is a group.
+    def group?
+      idempotents.size == 1
+    end
+
+    #Checks if the monoid is commutative.
+    def commutative?
+      @binary_operation.commutative?
+    end
+
+    #Checks if the monoid is monogenic, i.e it is generated by a single element.
+    def monogenic?
+      generating_subset.size == 1
+    end
+
+    #Calculates the L-class of an element.
+    def l_class(element)
+      li = left_ideal(element)
+      @elements.select { |el| left_ideal(el) == li }
+    end
+
+    #Calculates the R-class of an element.
+    def r_class(element)
+      r = right_ideal(element)
+      @elements.select { |el| right_ideal(el) == r }
+    end
+
+    #Calculates the J-class of an element.
+    def j_class(element)
+      d = ideal(element)
+      @elements.select { |el| ideal(el) == d }
+    end
+
+    #Calculates the H-class of an element.
+    def h_class(element)
+      l_class(element) & r_class(element)
+    end
+
+    #Synonym for j_class (in a finite monoid the J and D relation are the same).
+    def d_class(element)
+      j_class(element)
+    end
+
+    #Synonym for h_trivial?.
+    def aperiodic?
+      h_trivial?
+    end
+
+    ##
+    # :method: l_classes
+    # Returns all L-classes of the monoid.
+
+    ##
+    # :method: r_classes
+    # Returns all R-classes of the monoid.
+
+    ##
+    # :method: j_classes
+    # Returns all J-classes of the monoid.
+
+    ##
+    # :method: h_classes
+    # Returns all H-classes of the monoid.
+
+    ##
+    # :method: d_classes
+    # Returns all D-classes of the monoid.
+
+    ##
+    # :method: l_trivial?
+    # Checks if all L-classes consist of one element.
+
+    ##
+    # :method: r_trivial?
+    # Checks if all R-classes consist of one element.
+
+    ##
+    # :method: j_trivial?
+    # Checks if all J-classes consist of one element.
+
+    ##
+    # :method: h_trivial?
+    # Checks if all H-classes consist of one element.
+
+    ##
+    # :method: d_trivial?
+    # Checks if all D-classes consist of one element.
+
+    ##
+    # Method missing magic...
+    def method_missing(name) #:nodoc:
+      case name.to_s
+      when /([jlrhd])_classes/
+        green_classes($1)
+      when /([jlrhd])_trivial?/
+        green_trivial?($1)
+      else
+        super
+      end
+    end
+
+    #Checks if the given set is a disjunctive subset.
+    def subset_disjunctive?(set)
+      tupels = []
+      @elements.each do |el1|
+        @elements.each do |el2|
+	  tupels << [el1, el2]
+        end
+      end
+
+      tupels.all? do |a,b|
+        a == b or tupels.any? do |x,y|
+          set.include?(self[x,a,y]) ^ set.include?(self[x,b,y])
         end
       end
     end
 
-    dfa = RLSM::DFA.create(:initial => neutral_element,
-                           :finals => finals,
-                           :transitions => get_transitions)
-    dfa.rename_states
+    #Returns a disjunctive subset if any exists. Returns +nil+ otherwise.
+    def disjunctive_subset
+      @elements.powerset.find { |s| subset_disjunctive? s }
+    end
 
-    dfa
-  end
+    #Returns an array with all disjunctive subsets.
+    def all_disjunctive_subsets
+      @elements.powerset.select { |s| subset_disjunctive? s }
+    end
 
-  #Returns itself.
-  def to_monoid
-    self
-  end
+    #Checks if the monoid is syntactic, i.e. if it has a disjunctive subset.
+    def syntactic?
+      !!disjunctive_subset
+    end
 
-  #Returns the regexp for the language.
-  def to_re
-    to_dfa.to_re
-  end
-
-  private
-  def get_transitions
-    trans = []
-    generating_subset.each do |l|
-      @elements.each do |s|
-        trans << [l,s,self[s,l]]
+    def to_s # :nodoc:
+      result = ""
+      sep = @elements.any? { |x| x.length > 1 } ? ',' : ''
+      @binary_operation.table.each_with_index do |el,i|
+        result += @binary_operation.elements[el]
+        if (i+1) % (@order) == 0
+          result += ' '
+        else
+          result += sep unless i = @order**2 - 1
+        end
       end
+
+      result
     end
-    trans
-  end
 
-  def check_args(*args)
-    args.flatten!
-    bad = args.find_all { |x| !@elements.include? x }
-
-    if bad.size == 1
-      raise MonoidException, "Bad argument: #{bad[0]}"
-    elsif bad.size > 1
-      raise MonoidException, "Bad arguments: #{bad.join(',')}"
+    def inspect # :nodoc:
+      "<#{self.class}: #{to_s}>"
     end
-  end
 
-  def get_closure_of(*args)
-    args.flatten!
-    check_args(args)
+    #Returns the monoid.
+    def to_monoid
+      self
+    end
 
-    #Add the neutral element if necassary
-    args.unshift @elements.first unless args.include? @elements.first
+    #Returns a regular expression which represents a language with a syntactic monoid isomorph to +self+.
+    def to_regexp
+      to_dfa.to_regexp
+    end
 
-    searching = true
-    while searching
-      searching = false
+    #Returns a DFA which represents a language with a syntactic monoid isomorph to +self+.
+    def to_dfa(finals = nil)
+      finals = finals || disjunctive_subset || []
 
-      args.product(args).each do |x,y|
-        unless args.include? self[x,y]
-          args << self[x,y]
-          searching = true
+      if syntactic?
+        unless all_disjunctive_subsets.include? finals
+          raise MonoidError, "#{finals} isn't a disjunctive subset."
+        end
+      end
+
+      string = "}s#{@elements.index(identity)} "
+
+      disjunctive_subset.each do |element|
+        string += "*#{@elements.index(element)} "
+      end
+
+      generating_subset.each do |let|
+        @elements.each do |start|
+          string += "s#{@elements.index(start)}-#{let}->s#{@elements.index(self[start,let])} "
+        end
+      end
+
+      RLSM::DFA.new string        
+    end
+
+    private
+    def set_to_monoid(set)
+      description = set.map do |el1|
+        set.map { |el2| self[el1,el2] }.join(",")
+      end
+
+      RLSM::Monoid[ description.join(' ') ]
+    end
+
+    def element_sorter
+      Proc.new { |el1,el2| @elements.index(el1) <=> @elements.index(el2)}
+    end
+
+    def subset_sorter
+      Proc.new do |set1,set2|
+        if set1.size == set2.size
+          set1.map { |el| @elements.index(el) } <=> 
+            set2.map { |el| @elements.index(el) }
+        else
+          set1.size <=> set2.size
         end
       end
     end
 
-    args.sort { |x,y| @elements.index(x) <=> @elements.index(y) }
-  end
+    def sorted_subsets
+      subsets = @elements.powerset
 
-  def get_binary_operation_from(bo)
-    if bo.class == String
-      return from_string_to_array(bo)
-    else
-      begin
-        return bo.map { |r| r.map { |x| x.to_s } }
-      rescue
-        raise MonoidException, "Something went wrong."
+      subsets.sort(&subset_sorter)
+    end
+    
+    def get_submonoid_candidates
+      submons =  []
+      
+      @elements.powerset.each do |set|
+        candidate = generated_set(set)
+        submons << candidate unless submons.include? candidate
+      end
+
+      submons.sort(&subset_sorter)
+    end
+
+    def bijective_maps_to(other)
+      return [] if @order != other.order
+
+      other.elements.permutations.map do |perm| 
+        Hash[*@elements.zip(perm).flatten]
       end
     end
-  end
 
-  def from_string_to_array(bo)
-    #Reduce multiple spaces and spaces before or after commas
-    bo.squeeze!(' ')
-    bo.gsub!(', ', ',')
-    bo.gsub!(' ,', ',')
-
-    bo.split.map { |row| split_rows(row) }
-  end
-
-  def split_rows(r)
-    if r.include? ','
-      return r.split(',')
-    else
-      return r.scan(/./)
-    end
-  end
-
-  def validate
-    validate_form_of_binary_operation
-    validate_elements
-    validate_neutral_element
-    validate_associativity
-  end
-
-  def validate_form_of_binary_operation
-    if @binary_operation.empty?
-      raise(MonoidException,
-            "No binary operation given!")
-    end
-
-    unless @binary_operation.all? { |r| r.size == @binary_operation.size }
-      raise(MonoidException,
-            "A binary operation must be quadratic!")
-    end
-  end
-
-  def validate_elements
-    #Have we enough elements
-    unless @elements.size == @order
-      raise(MonoidException,
-            "Expected #@order elements, but got #{@elements.join(',')}")
-    end
-
-    #All elements of the table are known?
-    unless @binary_operation.flatten.all? { |x| @elements.include? x }
-      raise(MonoidException,
-            "There are too many elements in the binary operation.")
-    end
-  end
-
-  def validate_neutral_element
-    #By convention 0 is the index of the neutral element, check this
-    unless @elements.all? do |x|
-        @binary_operation[0][@elements.index(x)] == x and
-          @binary_operation[@elements.index(x)][0] == x
+    def isomorphism?(map,other)
+      @elements.each do |el1|
+        @elements.each do |el2|
+          return false if map[self[el1,el2]] != other[map[el1],map[el2]]
+        end
       end
-      raise(MonoidException,
-            "Convention violated. #{@elements.first} is not a neutral element.")
-    end
-  end
 
-  def validate_associativity
-    #Search for a triple which violates the associativity
-    nat = @elements.product(@elements,@elements).find do |triple|
-      x,y,z = triple.map { |a| @elements.index(a) }
-      @binary_operation[x][@elements.index(@binary_operation[y][z])] !=
-        @binary_operation[@elements.index(@binary_operation[x][y])][z]
+      true
     end
 
-    #Found one?
-    if nat
-      err_str = "#{nat[0]}(#{nat[1]}#{nat[2]}) != (#{nat[0]}#{nat[1]})#{nat[2]}"
-      raise(MonoidException,
-            "Given binary operation is not associative: #{err_str}")
+    def antiisomorphism?(map,other)
+      @elements.each do |el1|
+        @elements.each do |el2|
+          return false if map[self[el1,el2]] != other[map[el2],map[el1]]
+        end
+      end
+
+      true
     end
-  end
-end
+
+    def green_classes(type)
+      not_tested = @elements.dup
+      classes = []
+
+      until not_tested.empty?
+        classes << self.send((type + '_class').to_sym, not_tested.first)
+	not_tested = not_tested.reject { |el| classes.last.include? el }
+      end
+
+      classes.sort(&subset_sorter)
+    end
+
+    def green_trivial?(type)
+      @elements.all? { |el| self.send((type + '_class').to_sym, el).size == 1 }
+    end
+  end   # of class Monoid
+end     # of module RLSM
