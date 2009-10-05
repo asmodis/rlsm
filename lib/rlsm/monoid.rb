@@ -449,8 +449,8 @@ module RLSM
 
       string = "}s#{@elements.index(identity)} "
 
-      disjunctive_subset.each do |element|
-        string += "*#{@elements.index(element)} "
+      finals.each do |element|
+        string += "*s#{@elements.index(element)} "
       end
 
       generating_subset.each do |let|
@@ -459,7 +459,7 @@ module RLSM
         end
       end
 
-      RLSM::DFA.new string        
+      RLSM::DFA.new string   
     end
 
     private

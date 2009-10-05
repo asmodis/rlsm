@@ -14,6 +14,11 @@ module RLSM
       new ''
     end
 
+    #Synonym for new.
+    def self.[](description)
+      new(description)
+    end
+
     #Creates a new RegExp.
     def initialize(description)
       @parse_tree = RE::Parser[ description ]

@@ -7,6 +7,12 @@ require "strscan"
 
 module RLSM
   class DFA
+    #Synonym for new.
+    def self.[](description)
+      new(description)
+    end
+
+    #Creates a new DFA.
     def initialize(description)
       parse_initial_state(description)
       parse_states(description)
@@ -362,7 +368,7 @@ module RLSM
         raise DFAError, "None or at least two initial states."
       end
 
-      @initial_state = description[/\}\s*(\w+)/,1]
+      @initial_state = description[/\}\s*\*?(\w+)/,1]
     end
 
     def parse_final_states(description)
