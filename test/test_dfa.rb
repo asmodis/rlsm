@@ -418,5 +418,18 @@ MONOID
     assert_equal expected_monoid, dfa.transition_monoid    
   end
 
-  test "Calculating the syntactic monoid."
+end
+
+context "DFA#to_regexp" do
+  test "Should return emptyset for DFA['}s1']" do
+    assert_equal RLSM::RegExp.empty_set, RLSM::DFA['}s1'].to_regexp
+  end
+
+  test "Should return empty word for DFA['}*s1']" do
+    assert_equal RLSM::RegExp.empty_word, RLSM::DFA['}*s1'].to_regexp
+  end
+
+  test "Should return a* for DFA['}*s1-a->s1']" do
+    assert_equal RLSM::RegExp['a*'], RLSM::DFA['}*s1-a->s1'].to_regexp
+  end
 end
