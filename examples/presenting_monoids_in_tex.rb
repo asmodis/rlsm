@@ -5,29 +5,31 @@ require 'tempfile'
 class Presenter
   @@template = <<TEMPLATE
 \\begin{minipage}{\\linewidth}
-\\begin{tabular}[t]{c|c}
-\\textbf{%l%table%%} & \\textbf{%l%dfa%%} \\\\ \\hline
- %%table2tex%% &  %%dfa2tex%%
+%%heading%%
+
+\\begin{tabular}[t]{lcccc}
+ %%table2tex%% & & & &
+ %%dfa2tex%%
 \\end{tabular}\\\\[2ex]
 
 \\begin{tabular}{llcll}
   \\multicolumn{2}{l}{\\textbf{%l%props%%:}} & & \\multicolumn{2}{l}{\\textbf{%l%special%%:}} \\\\
-  %l%generator%%: & %%generating_subset%%   &                 & %l%idem_els%%: & %%idempotents%% \\\\
-  %l%group%%:     & %%group?%%       &                        & %%zero1%% \\\\
-  %l%comm%%:      & %%commutative?%% &                        & %%zero2%% \\\\
-  %l%idem%%:      & %%idempotent?%%  &                        &                  & \\\\
-  %l%syn%%:       & %%syntactic?%%   &                        & \\multicolumn{2}{l}{\\textbf{%l%green%%:}} \\\\
-  %l%aper%%:      & %%aperiodic?%%   &                        & %l%lclasses%%:   & %%l_classes%% \\\\
-  %l%ltriv%%:     & %%l_trivial?%%   &                        & %l%rclasses%%:   & %%r_classes%% \\\\
-  %l%rtriv%%:     & %%r_trivial?%%   &                        & %l%hclasses%%:   & %%h_classes%% \\\\
-  %l%jtriv%%:     & %%j_trivial?%%   &                        & %l%dclasses%%:   & %%d_classes%% \\\\
-  %l%has_zero%%:  & %%zero?%%        &                        &                  &               \\\\
+  %l%generator%%: & %%generating_subset%%    & & %l%idem_els%%: & %%idempotents%% \\\\
+  %l%group%%:     & %%group?%%       &         & %%zero1%% \\\\
+  %l%comm%%:      & %%commutative?%% &         & %%zero2%% \\\\
+  %l%idem%%:      & %%idempotent?%%  &         &                  & \\\\
+  %l%syn%%:       & %%syntactic?%%   &         & \\multicolumn{2}{l}{\\textbf{%l%green%%:}} \\\\
+  %l%aper%%:      & %%aperiodic?%%   &         & %l%lclasses%%:   & %%l_classes%% \\\\
+  %l%ltriv%%:     & %%l_trivial?%%   &         & %l%rclasses%%:   & %%r_classes%% \\\\
+  %l%rtriv%%:     & %%r_trivial?%%   &         & %l%hclasses%%:   & %%h_classes%% \\\\
+  %l%jtriv%%:     & %%j_trivial?%%   &         & %l%dclasses%%:   & %%d_classes%% \\\\
+  %l%has_zero%%:  & %%zero?%%        &         &                  &               \\\\
 \\end{tabular}\\\\[1ex]
 
 \\textbf{%l%submons%%:} %%submonoids%%
 
 %%syntactic_properties%%
-\\end{minipage}\\\\[2ex]
+\\end{minipage}
 TEMPLATE
 
   @@lang = { 
@@ -54,7 +56,7 @@ TEMPLATE
                 'rclasses', 'R-classes',
                 'hclasses', 'H-classes',
                 'dclasses', 'D-classes',
-                'submons', 'Submonoids',
+                'submons', 'Proper submonoids',
                 'none', 'none',
                 'synprop','Syntactic Properties',
                 'disj', 'Disjunctive Subset',
@@ -84,7 +86,7 @@ TEMPLATE
                 'rclasses', 'R-Klassen',
                 'hclasses', 'H-Klassen',
                 'dclasses', 'D-Klassen',
-                'submons', 'Untermonoide',
+                'submons', 'Echte Untermonoide',
                 'none', 'keine',
                 'synprop','Syntaktische Eigenschaften',
                 'disj', 'Disjunktive Teilmenge',
@@ -93,13 +95,39 @@ TEMPLATE
                 false, 'nein'] 
   }
 
-  def self.to_latex(options = {})
-    options[:monoid] ||= RLSM::Monoid['012 120 201']
+  
+
+  def self.to_latex(monoid, options = {})
     options[:lang] ||= :en
     presenter = Presenter.new(options[:monoid], options[:lang])
     output = @@template.dup
     @@lang[options[:lang]].each_pair do |key, text|
       output.sub!("%l%#{key}%%", text)
+    end
+
+    while output =~ /%%(\w+\??)%%/
+      output.sub!($~[0], presenter.send($~[1].to_sym))
+    end
+
+    output
+  end
+
+  #Use with caution, many assumptions about the row parameter...
+  def self.db_row_to_latex(row, options = {})    
+    options[:lang] ||= :en
+
+    monoid = RLSM::Monoid[row.first]
+
+    presenter = Presenter.new(monoid, options[:lang])
+    output = @@template.dup
+    @@lang[options[:lang]].each_pair do |key, text|
+      output.sub!("%l%#{key}%%", text)
+    end
+
+    #Use precalculated values
+    ['zero?', 'syntactic?', 'commutative?', 'aperiodic?', 'l_trivial?',
+     'r_trivial?', 'j_trivial?', 'group?'].each_with_index do |entry,i|
+      output.sub!("%%#{entry}%%", @@lang[options[:lang]][row[i+6] == 1])
     end
 
     while output =~ /%%(\w+\??)%%/
@@ -118,6 +146,9 @@ TEMPLATE
     helper_table2tex(@monoid)
   end
 
+  def heading
+    "\\paragraph{Monoid #{@monoid.to_s}:}\\mbox{ }\\\\"
+  end
 
   def dfa2tex(opts = { :dot => true })
     dfa = @monoid.to_dfa
@@ -239,7 +270,7 @@ TEXT
     table = []
     monoid.binary_operation.table.each_with_index do |x, i| 
       table << [] if i % monoid.order == 0
-      table.last << @monoid.binary_operation.elements[x]
+      table.last << monoid.binary_operation.elements[x]
     end
 
     buffer = ['\begin{tabular}[t]{' +
@@ -258,11 +289,16 @@ TEXT
   end
 
   def reg2tex(re)
-    re_str = re.string.
-      gsub(RLSM::RE::ParserHelpers::EmptyWordSymbol, "\\lambda ").
-      gsub(RLSM::RE::ParserHelpers::UnionSymbol, "\\mid ").
-      gsub(RLSM::RE::ParserHelpers::StarSymbol, "^{*}")
-    "\\ensuremath{#{re_str}}"
+    if re.string.empty?
+      "\\ensuremath{\\emptyset}"
+    else
+      re_str = re.string.
+        gsub(RLSM::RE::ParserHelpers::EmptyWordSymbol, "\\lambda ").
+        gsub(RLSM::RE::ParserHelpers::UnionSymbol, "\\mid ").
+        gsub(RLSM::RE::ParserHelpers::StarSymbol, "^{*}")
+
+      "\\ensuremath{#{re_str}}"
+    end
   end
 
   def tex_xy_node(n)
