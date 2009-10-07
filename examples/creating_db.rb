@@ -17,6 +17,7 @@ create table if not exists monoids (
   has_zero         INTEGER,
   is_syntactic     INTEGER,
   is_commutative   INTEGER,
+  is_idempotent    INTEGER,
   is_aperiodic     INTEGER,
   is_l_trivial     INTEGER,
   is_r_trivial     INTEGER,
@@ -29,6 +30,7 @@ def monoid2sql(monoid)
   translate = { true => '1', false => '0' }
   sql = "insert into monoids values ("
   sql += "'#{monoid.to_s.chop}', "
+  sql += "'#{monoid.order}', "
   sql += "'#{monoid.generating_subset.size.to_s}', "
   sql += "'#{monoid.left_zeros.size.to_s}', "
   sql += "'#{monoid.right_zeros.size.to_s}', "
