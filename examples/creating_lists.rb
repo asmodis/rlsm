@@ -53,14 +53,15 @@ SQL
   f.puts "\\end{tabular}"
   f.puts "\\end{center}\n\n"
   
-  1.upto 5 do |order|
-    f.puts "\\section{Ordnung #{order}}\n"
+  1.upto 6 do |order|
+    num = db.execute("select count(*) from monoids where ord=#{order};").join
+    f.puts "\\section{Ordnung #{order} (#{num} Stück)}\n"
 
     query = "SELECT * FROM monoids WHERE ord=#{order} AND is_syntactic=1 AND is_commutative=1 AND is_idempotent=1 ORDER BY binop;"
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Syntaktisch, Kommutativ und Idempotent}\n"
+      f.puts "\\subsection{Syntaktisch, Kommutativ und Idempotent (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -73,7 +74,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Syntaktisch, Kommutativ und Aperiodisch}\n"
+      f.puts "\\subsection{Syntaktisch, Kommutativ und Aperiodisch (#{result.size} Stück)}\n"
       
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -85,7 +86,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Syntaktisch und Kommutativ}\n"
+      f.puts "\\subsection{Syntaktisch und Kommutativ (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -97,7 +98,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Syntaktisch und Idempotent}\n"
+      f.puts "\\subsection{Syntaktisch und Idempotent (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -110,7 +111,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Syntaktisch und Aperiodisch}\n"
+      f.puts "\\subsection{Syntaktisch und Aperiodisch (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -122,7 +123,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Nicht Syntaktisch, Kommutativ und Idempotent}\n"
+      f.puts "\\subsection{Nicht Syntaktisch, Kommutativ und Idempotent (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -135,7 +136,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Nicht Syntaktisch, Kommutativ und Aperiodisch}\n"
+      f.puts "\\subsection{Nicht Syntaktisch, Kommutativ und Aperiodisch (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -147,7 +148,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Nicht Syntaktisch und Kommutativ}\n"
+      f.puts "\\subsection{Nicht Syntaktisch und Kommutativ (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -159,7 +160,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Nicht Syntaktisch und Idempotent}\n"
+      f.puts "\\subsection{Nicht Syntaktisch und Idempotent (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
@@ -171,7 +172,7 @@ SQL
     result = db.execute(query)
 
     unless result.empty?
-      f.puts "\\subsection{Nicht Syntaktisch und Aperiodisch}\n"
+      f.puts "\\subsection{Nicht Syntaktisch und Aperiodisch (#{result.size} Stück)}\n"
 
       result.each do |row| 
         f.puts Presenter.db_row_to_latex(row, :lang => :de)
