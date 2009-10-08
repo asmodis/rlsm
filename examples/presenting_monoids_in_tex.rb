@@ -125,9 +125,9 @@ TEMPLATE
     end
 
     #Use precalculated values
-    ['zero?', 'syntactic?', 'commutative?', 'aperiodic?', 'l_trivial?',
+    ['zero?', 'syntactic?', 'commutative?', 'idempotent?','aperiodic?', 'l_trivial?',
      'r_trivial?', 'j_trivial?', 'group?'].each_with_index do |entry,i|
-      output.sub!("%%#{entry}%%", @@lang[options[:lang]][row[i+6] == 1])
+      output.sub!("%%#{entry}%%", @@lang[options[:lang]][row[i+6] == '1'])
     end
 
     while output =~ /%%(\w+\??)%%/
@@ -180,11 +180,11 @@ TEMPLATE
       end.join(' & ') + " \\\\ \\hline\n"
       dfa.states.each do |state|
         tmp_str = ''
-        tmp_str += "\\ensuremath{*}" if dfa.finals.include? state
+        tmp_str += "\\ensuremath{*}" if dfa.final_states.include? state
         tmp_str += "\\ensuremath{\\rightarrow}" if dfa.initial_state == state
         tmp_str += state + " & "
         tmp_str += dfa.alphabet.map do |letter|
-          tmp = dfa[letter,state]
+          tmp = dfa[state,letter]
           tmp ? tmp : 'nil'
         end.join(' & ')
         str+= tmp_str + " \\\\\n"
