@@ -12,7 +12,23 @@ module RLSM
       new(description)
     end
 
-    #Creates a new DFA.
+    #Creates a new DFA. The +description+ is a string which describes states and transitions.
+    #A state is described by a descriptor, which consists of latin letters and numbers (no whitespaces).
+    #
+    #To indicate a final state, the state descriptor starts with a *. This is allowed multiple times, even for the same state.
+    #
+    #The initial state starts with a right brace ('}'). This is only allowed once.
+    #
+    #A transition is described as follows
+    #   STATE -LETTERLIST-> STATE
+    # were +STATE+ is a state descriptor (* and } modifiers allowed) and +LETTERLIST+ is either a single letter of the alphabet or a comma seperated list of alphabet letters.
+    #
+    #*Remark*: This desription format may be the worst design desicion in the whole gem ...
+    #
+    #*Example*:
+    # RLSM::DFA["}s1-a,b->*s2"]
+    # RLSM::DFA["}s1 s2 *s3 s1-a->s2 s2-a,b->*s3 s3-b->s1"]
+    # RLSM::DFA["}s1 s2 *s3 }s1-a->s2 s2-a,b->*s3 s3-b->s1"] # => Error
     def initialize(description)
       parse_initial_state(description)
       parse_states(description)
@@ -20,7 +36,17 @@ module RLSM
       parse_transitions(description)
     end
     
-    attr_reader :initial_state, :final_states, :states, :alphabet
+    #Initial state of the DFA.
+    attr_reader :initial_state
+    
+    #Array of accepting states.
+    attr_reader :final_states
+
+    #Array of all states
+    attr_reader :states
+
+    #The alphabet of the DFA.
+    attr_reader :alphabet
 
     #Returns array of transitions (a transition is a triple consisting of start, destination and label).
     def transitions

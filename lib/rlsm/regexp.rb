@@ -19,7 +19,13 @@ module RLSM
       new(description)
     end
 
-    #Creates a new RegExp.
+    #Creates a new RegExp. The +description+ is a string consiting of latin letters, numbers and the following special characters
+    #1. +(+, +)+  for grouping subexpressions
+    #2. +|+ for union of regular expressions
+    #3. +*+ for the Kleene-Closure of a regular expression
+    #4. +@+ the empty word.
+    #
+    #Whitspaces will be ignored and the empty string represents the empty language.
     def initialize(description)
       @parse_tree = RE::Parser[ description ]
       @string = @parse_tree.to_s

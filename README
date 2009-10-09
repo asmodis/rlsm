@@ -1,12 +1,18 @@
 = rlsm
 rlsm stands for *R*egular *L*anguages and *S*yntactic *M*onoids.
 
+Source is availible from
+  http://github.com/asmodis/rlsm
+
+RDoc-Documentation is availible from
+  http://rlsm.rubyforge.org
+
 == DESCRIPTION:
 
 This is a ruby implementation of three concepts:
- - Deterministic Finite Automata (DFA)
+ - Deterministic Finite Automata
  - Regular Expressions (in the sense of theoretical computer sience)
- - Monoids (an algebraic construct)
+ - Monoids
 
 
 == SYNOPSIS:
@@ -18,23 +24,16 @@ This is a ruby implementation of three concepts:
   m.isomorph_to?(m) # => true
   m.commutative? # => false
 
-== REQUIREMENTS:
-
-none
-
 == INSTALL:
-
-Hopefully a 
 
   gem install rlsm 
 
-is sufficent.
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2008 Gunther Diemant <g.diemant@gmx.net>
+Copyright (c) 2009 Gunther Diemant <g.diemant@gmx.net>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
