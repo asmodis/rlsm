@@ -1,6 +1,7 @@
 Rakefile
 Manifest
 README
+rlsm.gemspec
 lib/rlsm.rb
 lib/rlsm/helper.rb
 lib/rlsm/binary_operation.rb
