@@ -462,6 +462,20 @@ module RLSM
       RLSM::DFA.new string   
     end
 
+
+    def regular?(x=nil)
+      if x.nil?
+        @elements.all? { |x| regular?(x) }
+      else
+        @elements.any? { |y| self[x,y,x] == x}
+      end
+    end
+
+    def inverse?
+      regular? and
+        idempotents.all? { |x| idempotents.all? { |y| self[x,y] == self[y,x] } }
+    end
+    
     private
     def set_to_monoid(set)
       description = set.map do |el1|
