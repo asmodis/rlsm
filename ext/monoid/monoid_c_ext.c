@@ -308,12 +308,54 @@ e_pos(VALUE self, VALUE table, VALUE rorder) {
   int i, order = NUM2INT(rorder);
   for(i=0; i < order; ++i) {
     if (NUM2INT(RARRAY(table)->ptr[i]) != i || NUM2INT(RARRAY(table)->ptr[order*i]) != i) {
-      rb_raise(rb_const_get(rb_cObject, rb_intern("MonoidError")), "Neutral element isn't in first row.");
+      rb_raise(rb_const_get(rb_cObject, rb_intern("RLSMError")), "Neutral element isn't in first row.");
     }
   }
 
   return Qnil;
 }
+
+static VALUE 
+non_associative_triple(VALUE self) {
+  VALUE table = rb_iv_get(self, "@table");
+  VALUE max = NUM2INT(rb_iv_get(self, "@order"));  
+  VALUE base = rb_iv_get(self, "@elements");
+  
+  int i,j,k;
+  for (i=0; i < max; ++i) {
+    for (j=0; j < max; ++j) {
+      for (k=0; k < max; ++k) {
+        int ij,jk, i_jk, ij_k;
+        ij = NUM2INT(RARRAY(table)->ptr[max*i + j]);
+        jk = NUM2INT(RARRAY(table)->ptr[max*j + k]);
+        i_jk = NUM2INT(RARRAY(table)->ptr[max*i + jk]);
+        ij_k = NUM2INT(RARRAY(table)->ptr[max*ij + k]);
+        if (ij_k != i_jk) {
+          return (rb_ary_new3(3,RARRAY(base)->ptr[i],RARRAY(base)->ptr[j],RARRAY(base)->ptr[k]));
+        }
+      }
+    }
+  }
+  
+  return (Qnil);
+}
+
+static VALUE 
+is_commutative(VALUE self) {
+  VALUE table = rb_iv_get(self, "@table");
+  VALUE max = NUM2INT(rb_iv_get(self, "@order"));
+
+  int i,j;
+  for (i=0; i < max; ++i) {
+    for (j=0; j < max; ++j) {
+      if (NUM2INT(RARRAY(table)->ptr[max*i + j]) != NUM2INT(RARRAY(table)->ptr[max*j + i]))
+	return (Qfalse);
+    }
+  }
+
+  return (Qtrue);
+}
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -323,7 +365,9 @@ extern "C" {
     VALUE monoid = rb_define_class_under(rlsm, "Monoid", rb_cObject);
     rb_define_singleton_method(monoid, "each_diagonal", (VALUE(*)(ANYARGS))each_diagonal, 2);
     rb_define_singleton_method(monoid, "each_with_diagonal", (VALUE(*)(ANYARGS))e_w_diagonal, 2);
-    rb_define_singleton_method(monoid, "enforce_identity_position", (VALUE(*)(ANYARGS))e_pos, 2);
+    rb_define_method(monoid, "enforce_identity_position", (VALUE(*)(ANYARGS))e_pos, 2);
+    rb_define_method(monoid, "is_commutative", (VALUE(*)(ANYARGS))is_commutative, 0);
+    rb_define_method(monoid, "non_associative_triple", (VALUE(*)(ANYARGS))non_associative_triple, 0);
   }
 #ifdef __cplusplus
 }

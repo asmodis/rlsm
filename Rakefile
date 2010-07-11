@@ -23,6 +23,10 @@ task :test => :build_ext do
   end
 end
 
+task :test_monoid => :build_ext do
+  ruby "test/test_monoid.rb"
+end
+
 task :create_gem do
   sh "gem build rlsm.gemspec"
   sh "mv *.gem gem/"

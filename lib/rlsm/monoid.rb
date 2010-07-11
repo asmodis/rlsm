@@ -1,119 +1,101 @@
 require File.join(File.dirname(__FILE__), 'helper')
-require File.join(File.dirname(__FILE__), 'binary_operation')
 require File.join(File.dirname(__FILE__), 'dfa')
+
+require File.join(File.dirname(__FILE__), 'monoid_compare')
+require File.join(File.dirname(__FILE__), 'monoid_iterator')
+
 RLSM::require_extension 'array'
 RLSM::require_extension 'monoid'
 
 module RLSM
   class Monoid
-    private_class_method :new
+    extend MonoidIterator
+        
+    attr_accessor :elements, :order, :table
 
-    def self.each(order)
-      raise ArgumentError, "Given order must be > 0" if order <= 0
+    def self.[](table)
+      new(table)
+    end
+    
+    def initialize(table, validate = true)
+      @table = parse(table)
+      @order = Math::sqrt(@table.size).to_i
+      @elements = @table[0,@order].map { |x| x.to_s }
+      @internal = {}
+      @elements.each_with_index { |x,i| @internal[x] = i }
+      @table.map! { |x| @internal[x.to_s] }
 
-      if order == 1  #trivial case
-        yield new(RLSM::BinaryOperation.original_new([0], ['0'], { '0' => 0}))
-        return
-      end
+      if validate
+        if @order == 0
+          raise RLSMError, "No elements given."
+        end
+        
+        unless @table.size == @order**2
+          raise RLSMError, "Binary operation must be quadratic."
+        end
 
-      elements = (0...order).to_a.map { |x| x.to_s }
-      mapping = {}
-      elements.each_with_index { |x,i| mapping[x] = i }
+        unless @table.uniq.size == @order
+          raise RLSMError, "Number of different elements is wrong."
+        end
 
-      #calculate the permutations once
-      permutations = (1...order).to_a.permutations.map { |p| p.unshift 0 }
+        enforce_identity_position(@table, @order)
 
-      each_diagonal(order,permutations) do |diagonal|
-        each_with_diagonal(diagonal,permutations) do |table|
-          yield new(RLSM::BinaryOperation.original_new(table, elements, mapping))
+        nat = non_associative_triple
+        unless nat.nil?
+          err_str = "(#{nat[0]}#{nat[0]})#{nat[0]} != #{nat[0]}(#{nat[1]}#{nat[2]})"
+          raise RLSMError, "Associativity required, but #{err_str}."
         end
       end
     end
 
+    def parse(table)
+      return table if Array === table
+
+      if table.include?(',')
+        return table.gsub(/\W/,',').squeeze(',').split(',')
+      else
+        return table.gsub(/\W/,'').scan(/./)
+      end
+    end
     
-    attr_accessor :elements, :order, :binary_operation
-
-    #Like new, but without validation.
-    def self.new!(description)
-      new RLSM::BinaryOperation.new!(description)
-    end
-
-    #Creates a Monoid with the binary operation described in +description+. 
-    #Validates that the BinaryOperation is assoviative and the neutral element 
-    #is in the first row.
-    #
-    #See also BinaryOperation::new.
-    def self.[](description)
-      binop = RLSM::BinaryOperation.new(description)
-      binop.enforce_associativity
-      enforce_identity_position(binop.table, binop.order)
-
-      new(binop)
-    end
-
-
-    #:notnew:
-    #*Remark*: No validation is performed. Use it only when you're really know what to do.
-    #Use Monoid::[] instead (or Monoid::new!).
-    def initialize(binop)
-      @binary_operation = binop
-      @elements = @binary_operation.elements
-      @order = @elements.size
-
-      instance_eval(&block) if block_given?
-    end
-
     #Calculates the product of the given elements.
     def [](*args)
       case args.size
       when 0,1
-        raise ArgumentError, "At least two elements must be provided."
+        raise RLSMError, "At least two elements must be provided."
       when 2
-        @binary_operation[*args]
+        begin
+          @elements[ @table[ @order*@internal[args[0]] + @internal[args[1]] ] ]
+        rescue
+          raise RLSMError, "Given arguments aren't monoid elements."
+        end
       else
-        args[0,2] = @binary_operation[args[0],args[1]]
+        args[0,2] = self[ *args[0,2] ]
         self[*args]
       end
     end
 
-    #Two monoids are equal if they have the same binary operation on the same set.
-    def ==(other)
-      return nil unless RLSM::Monoid === other
-
-      @binary_operation.table == other.binary_operation.table and
-        @binary_operation.elements == other.binary_operation.elements
-    end
-
-    #Checks if +self+ is a proper submonoid of +other+.
-    def <(other)
-      return nil unless RLSM::Monoid === other
-      return false if @order >= other.order
-
-      @elements.each do |e1|
-        @elements.each do |e2|
-          begin
-            return false if self[e1,e2] != other[e1,e2]
-          rescue BinOpError
-            return false
-          end
+    def to_s # :nodoc:
+      result = ""
+      sep = @elements.any? { |x| x.length > 1 } ? ',' : ''
+      @table.each_with_index do |el,i|
+        result += @elements[el]
+        if (i+1) % (@order) == 0
+          result += ' '
+        else
+          result += sep unless i = @order**2 - 1
         end
       end
 
-      true
+      result
     end
 
-    #Checks if +self+ is a submonoid of (or equal to) +other+.
-    def <=(other)
-      (self == other) || (self < other)
+    def inspect # :nodoc:
+      "<#{self.class}: #{to_s}>"
     end
 
-    def >(other) #:nodoc:
-      other < self
-    end
+    include MonoidCompare
 
-    def >=(other) #:nodoc:
-      other <= self
-    end
 
     #Returns the submonoid generated by +set+.
     #
@@ -283,7 +265,7 @@ module RLSM
 
     #Checks if the monoid is commutative.
     def commutative?
-      @binary_operation.commutative?
+      is_commutative
     end
 
     #Checks if the monoid is monogenic, i.e it is generated by a single element.
@@ -406,25 +388,6 @@ module RLSM
     #Checks if the monoid is syntactic, i.e. if it has a disjunctive subset.
     def syntactic?
       !!disjunctive_subset
-    end
-
-    def to_s # :nodoc:
-      result = ""
-      sep = @elements.any? { |x| x.length > 1 } ? ',' : ''
-      @binary_operation.table.each_with_index do |el,i|
-        result += @binary_operation.elements[el]
-        if (i+1) % (@order) == 0
-          result += ' '
-        else
-          result += sep unless i = @order**2 - 1
-        end
-      end
-
-      result
-    end
-
-    def inspect # :nodoc:
-      "<#{self.class}: #{to_s}>"
     end
 
     #Returns the monoid.
