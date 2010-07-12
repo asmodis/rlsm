@@ -1,12 +1,20 @@
 #include <ruby.h>
 
+#ifndef RARRAY_PTR
+#define RARRAY_PTR(ary) RARRAY(ary)->ptr
+#endif
+
+#ifndef RARRAY_LEN
+#define RARRAY_LEN(ary) RARRAY(ary)->len
+#endif
+
 typedef int bool;
 
 static int 
 mi_index(VALUE ary, int index) {
   int i;
-  for (i=0; i < RARRAY(ary)->len; ++i) {
-    if (NUM2INT(RARRAY(ary)->ptr[i]) == index) { return i; }
+  for (i=0; i < RARRAY_LEN(ary); ++i) {
+    if (NUM2INT(RARRAY_PTR(ary)[i]) == index) { return i; }
   }
 
   return -1;
@@ -40,7 +48,7 @@ mi_helper_init_table(VALUE diagonal, int order) {
     else if (i % order == 0)
       result[i] = i / order;
     else if (i % order == i / order)
-      result[i] = NUM2INT(RARRAY(diagonal)->ptr[i / order]);
+      result[i] = NUM2INT(RARRAY_PTR(diagonal)[i / order]);
     else
       result[i] = 0;
   }
@@ -51,9 +59,9 @@ mi_helper_init_table(VALUE diagonal, int order) {
 static bool 
 mi_is_perm_stable(VALUE diagonal, VALUE perm) {
   int i;
-  for (i=0; i < RARRAY(diagonal)->len; ++i) {
-    int a = NUM2INT(RARRAY(diagonal)->ptr[i]);
-    int b = NUM2INT(RARRAY(perm)->ptr[NUM2INT(RARRAY(diagonal)->ptr[mi_index(perm, i)])]);
+  for (i=0; i < RARRAY_LEN(diagonal); ++i) {
+    int a = NUM2INT(RARRAY_PTR(diagonal)[i]);
+    int b = NUM2INT(RARRAY_PTR(perm)[NUM2INT(RARRAY_PTR(diagonal)[mi_index(perm, i)])]);
 
     if ( a != b)
       return 0;
@@ -64,11 +72,11 @@ mi_is_perm_stable(VALUE diagonal, VALUE perm) {
 
 static bool 
 mi_is_invertable(VALUE diag, int index) {
-  int i, pot = NUM2INT(RARRAY(diag)->ptr[index]);
+  int i, pot = NUM2INT(RARRAY_PTR(diag)[index]);
 
-  for (i=0; i < RARRAY(diag)->len; ++i) {
+  for (i=0; i < RARRAY_LEN(diag); ++i) {
     if (pot == 0) { return 1; }
-    pot = NUM2INT(RARRAY(diag)->ptr[pot]);
+    pot = NUM2INT(RARRAY_PTR(diag)[pot]);
   }
 
   return 0;
@@ -79,8 +87,8 @@ mi_helper_select_perms(VALUE diagonal, VALUE perms, int order) {
   VALUE result = rb_ary_new();
   VALUE perm;
   int i;
-  for (i=0; i < RARRAY(perms)->len; ++i) {
-    perm = RARRAY(perms)->ptr[i];
+  for (i=0; i < RARRAY_LEN(perms); ++i) {
+    perm = RARRAY_PTR(perms)[i];
     if (mi_is_perm_stable(diagonal, perm))
       rb_ary_push(result, perm);
   }
@@ -96,7 +104,7 @@ mi_helper_rc_restrictions(VALUE diagonal, int order) {
   int i;
   for (i=1; i < order; ++i) {
     result[i] = 1;
-    if (NUM2INT(RARRAY(diagonal)->ptr[i]) == i)
+    if (NUM2INT(RARRAY_PTR(diagonal)[i]) == i)
       result[i] *= 2; /* idempotent */
     if (mi_is_invertable(diagonal, i))
       result[i] *= 3; /* invertible */
@@ -109,15 +117,15 @@ static bool
 mi_is_diagonal_valid(int* diagonal, int ord, VALUE perms) {
   int i,j;
   VALUE perm;
-  for (i=0; i < RARRAY(perms)->len; ++i) {
-    perm = RARRAY(perms)->ptr[i];
+  for (i=0; i < RARRAY_LEN(perms); ++i) {
+    perm = RARRAY_PTR(perms)[i];
 
     for (j=0; j < ord; ++j) {
       int ii, pdii;
       ii = mi_index(perm, j);
       if (diagonal[ii] == -1) { break; }
 
-      pdii = NUM2INT(RARRAY(perm)->ptr[diagonal[ii]]);
+      pdii = NUM2INT(RARRAY_PTR(perm)[diagonal[ii]]);
       if (diagonal[j] < pdii) { break; }
       if (diagonal[j] > pdii) { return 0; }
     }
@@ -162,9 +170,9 @@ mi_is_iso_antiiso(const int* table, int order, VALUE perms) {
   int max_index = order*order;
   VALUE perm;
 
-  for (p = 0; p < RARRAY(perms)->len; ++p) {
+  for (p = 0; p < RARRAY_LEN(perms); ++p) {
     int smaller_iso = 0, smaller_aiso = 0;
-    perm = RARRAY(perms)->ptr[p];
+    perm = RARRAY_PTR(perms)[p];
     for (i = order+1; i < max_index; ++i) {
       int ix1, ix2, ti, tii, taii, ptii, ptaii;
       ix1 = mi_index(perm, i / order);
@@ -177,8 +185,8 @@ mi_is_iso_antiiso(const int* table, int order, VALUE perms) {
       if (ti == -1 || tii == -1 || taii == -1 )
         break;
 
-      ptii  = NUM2INT(RARRAY(perm)->ptr[tii]);
-      ptaii = NUM2INT(RARRAY(perm)->ptr[taii]);
+      ptii  = NUM2INT(RARRAY_PTR(perm)[tii]);
+      ptaii = NUM2INT(RARRAY_PTR(perm)[taii]);
       
       if (ti < ptii)
         smaller_iso = 1;
@@ -253,7 +261,7 @@ each_diagonal(VALUE self, VALUE rorder, VALUE perms) {
   while(1) {
     diagonal[index]++;
     if (diagonal[index] >= order) {
-      if (index == 1) { return; }  /* finished */
+      if (index == 1) { return Qnil; }  /* finished */
       diagonal[index] = -1;
       index--;
     }
@@ -270,7 +278,7 @@ each_diagonal(VALUE self, VALUE rorder, VALUE perms) {
 
 static VALUE 
 e_w_diagonal(VALUE self, VALUE diagonal, VALUE perms) {
-  int order = RARRAY(diagonal)->len, t_order = order*order;
+  int order = RARRAY_LEN(diagonal), t_order = order*order;
   int* table = mi_helper_init_table(diagonal, order);
   VALUE rperms = mi_helper_select_perms(diagonal, perms, order);
   int* rc_rest = mi_helper_rc_restrictions(diagonal, order);
@@ -281,7 +289,7 @@ e_w_diagonal(VALUE self, VALUE diagonal, VALUE perms) {
   while (1) {
     table[index]++;
     if (table[index] >= order) {
-      if (index <= order + 2) { return; }  /* finished */
+      if (index <= order + 2) { return Qnil; }  /* finished */
       table[index] = -1;
       index--;
       /* skip diagonal and first column */
@@ -307,7 +315,7 @@ static VALUE
 e_pos(VALUE self, VALUE table, VALUE rorder) {
   int i, order = NUM2INT(rorder);
   for(i=0; i < order; ++i) {
-    if (NUM2INT(RARRAY(table)->ptr[i]) != i || NUM2INT(RARRAY(table)->ptr[order*i]) != i) {
+    if (NUM2INT(RARRAY_PTR(table)[i]) != i || NUM2INT(RARRAY_PTR(table)[order*i]) != i) {
       rb_raise(rb_const_get(rb_cObject, rb_intern("RLSMError")), "Neutral element isn't in first row.");
     }
   }
@@ -326,12 +334,12 @@ non_associative_triple(VALUE self) {
     for (j=0; j < max; ++j) {
       for (k=0; k < max; ++k) {
         int ij,jk, i_jk, ij_k;
-        ij = NUM2INT(RARRAY(table)->ptr[max*i + j]);
-        jk = NUM2INT(RARRAY(table)->ptr[max*j + k]);
-        i_jk = NUM2INT(RARRAY(table)->ptr[max*i + jk]);
-        ij_k = NUM2INT(RARRAY(table)->ptr[max*ij + k]);
+        ij = NUM2INT(RARRAY_PTR(table)[max*i + j]);
+        jk = NUM2INT(RARRAY_PTR(table)[max*j + k]);
+        i_jk = NUM2INT(RARRAY_PTR(table)[max*i + jk]);
+        ij_k = NUM2INT(RARRAY_PTR(table)[max*ij + k]);
         if (ij_k != i_jk) {
-          return (rb_ary_new3(3,RARRAY(base)->ptr[i],RARRAY(base)->ptr[j],RARRAY(base)->ptr[k]));
+          return (rb_ary_new3(3,RARRAY_PTR(base)[i],RARRAY_PTR(base)[j],RARRAY_PTR(base)[k]));
         }
       }
     }
@@ -348,7 +356,7 @@ is_commutative(VALUE self) {
   int i,j;
   for (i=0; i < max; ++i) {
     for (j=0; j < max; ++j) {
-      if (NUM2INT(RARRAY(table)->ptr[max*i + j]) != NUM2INT(RARRAY(table)->ptr[max*j + i]))
+      if (NUM2INT(RARRAY_PTR(table)[max*i + j]) != NUM2INT(RARRAY_PTR(table)[max*j + i]))
 	return (Qfalse);
     }
   }

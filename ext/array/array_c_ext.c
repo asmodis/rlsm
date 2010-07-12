@@ -1,5 +1,13 @@
 #include <ruby.h>
 
+#ifndef RARRAY_PTR
+#define RARRAY_PTR(ary) RARRAY(ary)->ptr
+#endif
+
+#ifndef RARRAY_LEN
+#define RARRAY_LEN(ary) RARRAY(ary)->len
+#endif
+
 static int 
 c_subset_next(int* sub, int n, int k) {
   int i = k - 1;
@@ -49,7 +57,7 @@ ary2ruby(int* subset, int k, VALUE ary) {
   int i;
   
   for (i=0; i < k; ++i) {
-    rb_ary_store(result, i, RARRAY(ary)->ptr[subset[i]]);
+    rb_ary_store(result, i, RARRAY_PTR(ary)[subset[i]]);
   }
 
   return result; 
@@ -58,7 +66,7 @@ ary2ruby(int* subset, int k, VALUE ary) {
 static VALUE 
 powerset(VALUE self) {
   int k;
-  int n = RARRAY(self)->len;
+  int n = RARRAY_LEN(self);
   if (!rb_block_given_p()) {
     VALUE result = rb_ary_new();
     for (k=0; k <= n; ++k) {
@@ -96,7 +104,7 @@ powerset(VALUE self) {
 static VALUE
 permutations(VALUE self) {
   int res;
-  int n = RARRAY(self)->len;
+  int n = RARRAY_LEN(self);
   int* perm = (int*) ALLOCA_N(int, n);
   int t;
   for (t=0; t < n; ++t)  { perm[t] = t; }
