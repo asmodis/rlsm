@@ -52,9 +52,9 @@ module RLSM
       return table if Array === table
 
       if table.include?(',')
-        return table.gsub(/\W/,',').squeeze(',').split(',')
+        table.gsub(/\W/,',').squeeze(',').split(',').reject { |x| x.empty? }
       else
-        return table.gsub(/\W/,'').scan(/./)
+        table.gsub(/\W/,'').scan(/./)
       end
     end
     

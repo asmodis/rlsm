@@ -402,7 +402,7 @@ context "Accepting of words, transition monoid" do
   end
 
 
-=begin
+  
   test "Calculating the transition monoid." do
     dfa = RLSM::DFA.new "}s1-a->s2 s2 -a-> *s3 s3 -b-> s2"
     expected_monoid = RLSM::Monoid[ <<MONOID
@@ -419,7 +419,7 @@ MONOID
 ]
     assert_equal expected_monoid, dfa.transition_monoid    
   end
-=end
+
 end
 
 context "DFA#to_regexp" do
