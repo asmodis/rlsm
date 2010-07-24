@@ -70,18 +70,6 @@ mi_is_perm_stable(VALUE diagonal, VALUE perm) {
   return 1;
 }
 
-static bool 
-mi_is_invertable(VALUE diag, int index) {
-  int i, pot = NUM2INT(RARRAY_PTR(diag)[index]);
-
-  for (i=0; i < RARRAY_LEN(diag); ++i) {
-    if (pot == 0) { return 1; }
-    pot = NUM2INT(RARRAY_PTR(diag)[pot]);
-  }
-
-  return 0;
-}
-
 static VALUE 
 mi_helper_select_perms(VALUE diagonal, VALUE perms, int order) {
   VALUE result = rb_ary_new();
@@ -91,23 +79,6 @@ mi_helper_select_perms(VALUE diagonal, VALUE perms, int order) {
     perm = RARRAY_PTR(perms)[i];
     if (mi_is_perm_stable(diagonal, perm))
       rb_ary_push(result, perm);
-  }
-
-  return result;
-}
-
-static int* 
-mi_helper_rc_restrictions(VALUE diagonal, int order) {
-  int* result = (int*) calloc(order, sizeof(int));
-  result[0] = 1;
-
-  int i;
-  for (i=1; i < order; ++i) {
-    result[i] = 1;
-    if (NUM2INT(RARRAY_PTR(diagonal)[i]) == i)
-      result[i] *= 2; /* idempotent */
-    if (mi_is_invertable(diagonal, i))
-      result[i] *= 3; /* invertible */
   }
 
   return result;

@@ -64,9 +64,9 @@ ary2ruby(int* subset, int k, VALUE ary) {
 }
 
 static VALUE 
-powerset(VALUE self) {
+powerset(VALUE self, VALUE ary) {
   int k;
-  int n = RARRAY_LEN(self);
+  int n = RARRAY_LEN(ary);
   if (!rb_block_given_p()) {
     VALUE result = rb_ary_new();
     for (k=0; k <= n; ++k) {
@@ -75,7 +75,7 @@ powerset(VALUE self) {
       for (i=0; i < k; ++i)  { subset[i] = i; }
       
       while(1) {
-	rb_ary_push(result, ary2ruby(subset,k,self));
+	rb_ary_push(result, ary2ruby(subset,k,ary));
 	res = c_subset_next(subset, n, k);
 	if (res == -1)
 	  break;
@@ -90,7 +90,7 @@ powerset(VALUE self) {
       for (i=0; i < k; ++i)  { subset[i] = i; }
       
       while(1) {
-	rb_yield(ary2ruby(subset,k,self));
+	rb_yield(ary2ruby(subset,k,ary));
 	res = c_subset_next(subset, n, k);
 	if (res == -1)
 	  break;
@@ -102,16 +102,16 @@ powerset(VALUE self) {
 }
 
 static VALUE
-permutations(VALUE self) {
+permutations(VALUE self, VALUE ary) {
   int res;
-  int n = RARRAY_LEN(self);
+  int n = RARRAY_LEN(ary);
   int* perm = (int*) ALLOCA_N(int, n);
   int t;
   for (t=0; t < n; ++t)  { perm[t] = t; }
 
   if (rb_block_given_p()) {
     while(1) {
-      rb_yield(ary2ruby(perm, n, self));
+      rb_yield(ary2ruby(perm, n, ary));
       res = c_next_perm(perm, n);
       if (res == -1)
 	break;
@@ -120,7 +120,7 @@ permutations(VALUE self) {
   else {
     VALUE result = rb_ary_new();
     while(1) {
-      rb_ary_push(result,ary2ruby(perm, n, self));
+      rb_ary_push(result,ary2ruby(perm, n, ary));
       res = c_next_perm(perm, n);
       if (res == -1)
 	break;
@@ -136,9 +136,10 @@ permutations(VALUE self) {
 extern "C" {
 #endif
   void Init_array_cext() {
-    VALUE ary = rb_const_get(rb_cObject, rb_intern("Array")); 
-    rb_define_method(ary, "powerset", (VALUE(*)(ANYARGS))powerset, 0);
-    rb_define_method(ary, "permutations", (VALUE(*)(ANYARGS))permutations, 0);
+    VALUE rlsm = rb_define_module("RLSM");
+    VALUE ary_ext = rb_define_module_under(rlsm, "ArrayExt");
+    rb_define_singleton_method(ary_ext, "powerset", (VALUE(*)(ANYARGS))powerset, 1);
+    rb_define_singleton_method(ary_ext, "permutations", (VALUE(*)(ANYARGS))permutations, 1);
   }
 #ifdef __cplusplus
 }

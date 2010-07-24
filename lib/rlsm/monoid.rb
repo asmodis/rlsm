@@ -377,12 +377,12 @@ module RLSM
 
     #Returns a disjunctive subset if any exists. Returns +nil+ otherwise.
     def disjunctive_subset
-      @elements.powerset.find { |s| subset_disjunctive? s }
+      RLSM::ArrayExt::powerset(@elements).find { |s| subset_disjunctive? s }
     end
 
     #Returns an array with all disjunctive subsets.
     def all_disjunctive_subsets
-      @elements.powerset.select { |s| subset_disjunctive? s }
+      RLSM::ArrayExt::powerset(@elements).select { |s| subset_disjunctive? s }
     end
 
     #Checks if the monoid is syntactic, i.e. if it has a disjunctive subset.
@@ -464,7 +464,7 @@ module RLSM
     end
 
     def sorted_subsets
-      subsets = @elements.powerset
+      subsets = RLSM::ArrayExt::powerset(@elements)
 
       subsets.sort(&subset_sorter)
     end
@@ -472,7 +472,7 @@ module RLSM
     def get_submonoid_candidates
       submons =  []
       
-      @elements.powerset.each do |set|
+      RLSM::ArrayExt::powerset(@elements).each do |set|
         candidate = generated_set(set)
         submons << candidate unless submons.include? candidate
       end
@@ -483,7 +483,7 @@ module RLSM
     def bijective_maps_to(other)
       return [] if @order != other.order
 
-      other.elements.permutations.map do |perm| 
+      RLSM::ArrayExt::permutations(other.elements).map do |perm| 
         Hash[*@elements.zip(perm).flatten]
       end
     end

@@ -312,7 +312,7 @@ module RLSM
     end
 
     def bijective_maps_to(other)
-      bijective_maps = other.states.permutations.map do |perm| 
+      bijective_maps = RLSM::ArrayExt::permutations(other.states).map do |perm| 
         Hash[*@states.zip(perm).flatten]
       end
 
