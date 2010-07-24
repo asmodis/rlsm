@@ -20,10 +20,10 @@ module RLSM
     def initialize(table, validate = true)
       @table = parse(table)
       @order = Math::sqrt(@table.size).to_i
-      @elements = @table[0,@order].map { |x| x.to_s }
+      @elements = @table[0,@order].clone
       @internal = {}
       @elements.each_with_index { |x,i| @internal[x] = i }
-      @table.map! { |x| @internal[x.to_s] }
+      @table.map! { |x| @internal[x] }
 
       if validate
         if @order == 0
@@ -77,9 +77,9 @@ module RLSM
 
     def to_s # :nodoc:
       result = ""
-      sep = @elements.any? { |x| x.length > 1 } ? ',' : ''
+      sep = @elements.any? { |x| x.to_s.length > 1 } ? ',' : ''
       @table.each_with_index do |el,i|
-        result += @elements[el]
+        result += @elements[el].to_s
         if (i+1) % (@order) == 0
           result += ' '
         else

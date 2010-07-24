@@ -236,8 +236,8 @@ mi_is_rc_rest_satisfied(const int* table, int order, const int* rc_rest) {
 
 static bool 
 mi_table_valid(const int* table, int order, const int* rc_rest, VALUE perms) {
-  if (!mi_is_rc_rest_satisfied(table, order, rc_rest))
-    return 0;
+  /*if (!mi_is_rc_rest_satisfied(table, order, rc_rest))
+    return 0;*/
   
   if (!mi_is_associative(table, order))
     return 0;
@@ -281,7 +281,7 @@ e_w_diagonal(VALUE self, VALUE diagonal, VALUE perms) {
   int order = RARRAY_LEN(diagonal), t_order = order*order;
   int* table = mi_helper_init_table(diagonal, order);
   VALUE rperms = mi_helper_select_perms(diagonal, perms, order);
-  int* rc_rest = mi_helper_rc_restrictions(diagonal, order);
+  int* rc_rest = NULL; /*mi_helper_rc_restrictions(diagonal, order);*/
 
   if (mi_table_valid(table, order, rc_rest, rperms)) { rb_yield(mi_ary2rb(table, t_order)); }
 
