@@ -205,40 +205,9 @@ mi_is_iso_antiiso(const int* table, int order, VALUE perms) {
   return 1;
 }
 
-static bool 
-mi_is_rc_rest_satisfied(const int* table, int order, const int* rc_rest) {
-  int i,j,k;
-  for (i=1; i < order; ++i) {
-    if (rc_rest[i] != 1) {
-      if (rc_rest[i] % 2 == 0) {
-        for (j=1; j < order; ++j) {
-          if (table[order*i + j] == 0 || table[order*j + i] == 0)
-            return 0;
-        }
-      }
-
-      if (rc_rest[i] % 3 == 0) {
-        for (j=0; j < order; ++j) {
-          for (k=j+1; k < order; ++k) {
-            if (table[order*i + j] != -1 && table[order*i + j] == table[order*i + k] )
-              return 0;
-            if (table[order*j + i] != -1 &&  table[order*j + i] == table[order*k + i])
-              return 0;
-
-          }
-        }
-      }
-    }
-  }
-
-  return 1;
-}
 
 static bool 
-mi_table_valid(const int* table, int order, const int* rc_rest, VALUE perms) {
-  /*if (!mi_is_rc_rest_satisfied(table, order, rc_rest))
-    return 0;*/
-  
+mi_table_valid(const int* table, int order, VALUE perms) {
   if (!mi_is_associative(table, order))
     return 0;
 
@@ -281,9 +250,8 @@ e_w_diagonal(VALUE self, VALUE diagonal, VALUE perms) {
   int order = RARRAY_LEN(diagonal), t_order = order*order;
   int* table = mi_helper_init_table(diagonal, order);
   VALUE rperms = mi_helper_select_perms(diagonal, perms, order);
-  int* rc_rest = NULL; /*mi_helper_rc_restrictions(diagonal, order);*/
 
-  if (mi_table_valid(table, order, rc_rest, rperms)) { rb_yield(mi_ary2rb(table, t_order)); }
+  if (mi_table_valid(table, order, rperms)) { rb_yield(mi_ary2rb(table, t_order)); }
 
   int index = t_order - 2;
   while (1) {
@@ -296,7 +264,7 @@ e_w_diagonal(VALUE self, VALUE diagonal, VALUE perms) {
       if ((index % order == index / order) || (index % order == 0))
         index--;
     }
-    else if (mi_table_valid(table, order, rc_rest, rperms)) {
+    else if (mi_table_valid(table, order, rperms)) {
       if (index == t_order - 2)
         rb_yield(mi_ary2rb(table, t_order));
       else {
