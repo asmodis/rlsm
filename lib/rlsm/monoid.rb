@@ -426,11 +426,11 @@ module RLSM
     end
 
 
-    def regular?(x=nil)
-      if x.nil?
+    def regular?(a=nil)
+      if a.nil?
         @elements.all? { |x| regular?(x) }
       else
-        @elements.any? { |y| self[x,y,x] == x}
+        @elements.any? { |x| self[a,x,a] == a}
       end
     end
 

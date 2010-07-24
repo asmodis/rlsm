@@ -7,9 +7,8 @@ class Presenter
 \\begin{minipage}{\\linewidth}
 %%heading%%
 
-\\begin{tabular}[t]{lcccc}
- %%table2tex%% & & & &
- %%dfa2tex%%
+\\begin{tabular}[t]{l}
+ %%table2tex%%
 \\end{tabular}\\\\[2ex]
 
 \\begin{tabular}{llcll}
@@ -63,7 +62,7 @@ TEMPLATE
                 'reg', 'Regular Expression',
                 true, 'yes',
                 false, 'no'], 
-    :de => Hash['table', 'Binäre Operation',
+    :de => Hash['table', 'Binaere Operation',
                 'dfa', 'DFA',
                 'props', 'Eigenschaften des Monoids',
                 'special','Spezielle Elemente',
@@ -90,7 +89,7 @@ TEMPLATE
                 'none', 'keine',
                 'synprop','Syntaktische Eigenschaften',
                 'disj', 'Disjunktive Teilmenge',
-                'reg', 'Regulärer Ausdruck',
+                'reg', 'Regulaerer Ausdruck',
                 true, 'ja',
                 false, 'nein'] 
   }
@@ -268,9 +267,9 @@ TEXT
 
   def helper_table2tex(monoid)
     table = []
-    monoid.binary_operation.table.each_with_index do |x, i| 
+    monoid.table.each_with_index do |x, i| 
       table << [] if i % monoid.order == 0
-      table.last << monoid.binary_operation.elements[x]
+      table.last << monoid.elements[x]
     end
 
     buffer = ['\begin{tabular}[t]{' +

@@ -6,7 +6,7 @@ require "sqlite3"
 
 $db = SQLite3::Database.new("../data/monoids.db")
 
-[2,3,4,5,6].each do |i|
+[2,3,4,5,6,7].each do |i|
   puts "Monoids of order #{i}:"
   total = 0
   syntactic = 0
