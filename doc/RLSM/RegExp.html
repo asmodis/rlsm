@@ -1,0 +1,1036 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta name="Content-Type" content="text/html; charset=utf-8" />
+<title>Class: RLSM::RegExp</title>
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '..';
+  if (relpath != '') relpath += '/';
+</script>
+<script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (R)</a> &raquo; 
+    <span class='title'><a href="../RLSM.html" title="RLSM (module)">RLSM</a></span>
+     &raquo; 
+    <span class="title">RegExp</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  <a id="class_list_link" href="#">Class List</a>
+  <a id="method_list_link" href="#">Method List</a>
+  <a id ="file_list_link" href="#">File List</a>
+</div>
+
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: RLSM::RegExp
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">RLSM::RegExp</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/rlsm/regexp.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_tree-instance_method" title="#parse_tree (instance method)">- (Object) <strong>parse_tree</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title readonly">readonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute parse_tree.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#string-instance_method" title="#string (instance method)">- (Object) <strong>string</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title readonly">readonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute string.
+</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#%5B%5D-class_method" title="[] (class method)">+ (Object) <strong>[]</strong>(description) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Synonym for new.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#empty_set-class_method" title="empty_set (class method)">+ (Object) <strong>empty_set</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns a RegExp which represents the empty language.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#empty_word-class_method" title="empty_word (class method)">+ (Object) <strong>empty_word</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns a RegExp which is the empty word.
+</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#%2B-instance_method" title="#+ (instance method)">- (Object) <strong>+</strong>(other) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Concatenate <tt>self</tt> with <tt>other</tt>.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#%3D%3D-instance_method" title="#== (instance method)">- (Object) <strong>==</strong>(other) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Checks if <tt>self</tt> is equal to <tt>other</tt>, i.e.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (RegExp) <strong>initialize</strong>(description) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Creates a new RegExp.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#star-instance_method" title="#star (instance method)">- (Object) <strong>star</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the Kleene closure of <tt>self</tt>.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_dfa-instance_method" title="#to_dfa (instance method)">- (Object) <strong>to_dfa</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Calculates a minimal DFA which represents the same languge as
+<tt>self</tt>.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_monoid-instance_method" title="#to_monoid (instance method)">- (Object) <strong>to_monoid</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Calculates the syntactic monoid of the represented language.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_regexp-instance_method" title="#to_regexp (instance method)">- (Object) <strong>to_regexp</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Simply returns self.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#%7C-instance_method" title="#| (instance method)">- (Object) <strong>|</strong>(other) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the union of <tt>self</tt> and <tt>other</tt>.
+</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <p class="signature first" id="initialize-instance_method">
+  
+    - (<tt><a href="" title="RLSM::RegExp (class)">RegExp</a></tt>) <strong>initialize</strong>(description) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Creates a new RegExp. The <tt>description</tt> is a string consiting of
+latin letters, numbers and the following special characters
+</p>
+<ol>
+<li><p>
+<tt>(</tt>, <tt>)</tt>  for grouping subexpressions
+</p>
+</li>
+<li><p>
+<tt>|</tt> for union of regular expressions
+</p>
+</li>
+<li><p>
+<tt>*</tt> for the Kleene-Closure of a regular expression
+</p>
+</li>
+<li><p>
+<tt>@</tt> the empty word.
+</p>
+</li>
+</ol>
+<p>
+Whitspaces will be ignored and the empty string represents the empty
+language.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+29
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 29</span>
+
+<span class='def def kw'>def</span> <span class='initialize identifier id'>initialize</span><span class='lparen token'>(</span><span class='description identifier id'>description</span><span class='rparen token'>)</span>
+  <span class='@parse_tree ivar id'>@parse_tree</span> <span class='assign token'>=</span> <span class='RE constant id'>RE</span><span class='colon2 op'>::</span><span class='Parser constant id'>Parser</span><span class='lbrack token'>[</span> <span class='description identifier id'>description</span> <span class='rbrack token'>]</span>
+  <span class='@string ivar id'>@string</span> <span class='assign token'>=</span> <span class='@parse_tree ivar id'>@parse_tree</span><span class='dot token'>.</span><span class='to_s identifier id'>to_s</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <span id="parse_tree-instance_method"></span>
+      <div class="method_details first">
+  <p class="signature first" id="parse_tree-instance_method">
+  
+    - (<tt>Object</tt>) <strong>parse_tree</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute parse_tree
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 34</span>
+
+<span class='def def kw'>def</span> <span class='parse_tree identifier id'>parse_tree</span>
+  <span class='@parse_tree ivar id'>@parse_tree</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <span id="string-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="string-instance_method">
+  
+    - (<tt>Object</tt>) <strong>string</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute string
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 34</span>
+
+<span class='def def kw'>def</span> <span class='string identifier id'>string</span>
+  <span class='@string ivar id'>@string</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="[]-class_method">
+  
+    + (<tt>Object</tt>) <strong>[]</strong>(description) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Synonym for new.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 18</span>
+
+<span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='lbrack token'>[</span><span class='rbrack token'>]</span><span class='lparen token'>(</span><span class='description identifier id'>description</span><span class='rparen token'>)</span>
+  <span class='new identifier id'>new</span><span class='lparen token'>(</span><span class='description identifier id'>description</span><span class='rparen token'>)</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="empty_set-class_method">
+  
+    + (<tt>Object</tt>) <strong>empty_set</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns a RegExp which represents the empty language.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 13</span>
+
+<span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='empty_set identifier id'>empty_set</span>
+  <span class='new identifier id'>new</span> <span class='string val'>''</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="empty_word-class_method">
+  
+    + (<tt>Object</tt>) <strong>empty_word</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns a RegExp which is the empty word.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+8
+9
+10</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 8</span>
+
+<span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='empty_word identifier id'>empty_word</span>
+  <span class='new identifier id'>new</span> <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RE constant id'>RE</span><span class='colon2 op'>::</span><span class='ParserHelpers constant id'>ParserHelpers</span><span class='colon2 op'>::</span><span class='EmptyWordSymbol constant id'>EmptyWordSymbol</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="+-instance_method">
+  
+    - (<tt>Object</tt>) <strong>+</strong>(other) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Concatenate <tt>self</tt> with <tt>other</tt>.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+37
+38
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 37</span>
+
+<span class='def def kw'>def</span> <span class='plus op'>+</span><span class='lparen token'>(</span><span class='other identifier id'>other</span><span class='rparen token'>)</span>
+  <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RegExp constant id'>RegExp</span><span class='dot token'>.</span><span class='new identifier id'>new</span> <span class='dstring node'>&quot;(#@string)(#{other.string})&quot;</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="==-instance_method">
+  
+    - (<tt>Object</tt>) <strong>==</strong>(other) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Checks if <tt>self</tt> is equal to <tt>other</tt>, i.e. they represent the
+same language.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 67</span>
+
+<span class='def def kw'>def</span> <span class='eq op'>==</span><span class='lparen token'>(</span><span class='other identifier id'>other</span><span class='rparen token'>)</span>
+  <span class='return return kw'>return</span> <span class='true true kw'>true</span> <span class='if if_mod kw'>if</span> <span class='@string ivar id'>@string</span> <span class='eq op'>==</span> <span class='other identifier id'>other</span><span class='dot token'>.</span><span class='string identifier id'>string</span>
+
+  <span class='first identifier id'>first</span> <span class='assign token'>=</span> <span class='@parse_tree ivar id'>@parse_tree</span><span class='dot token'>.</span><span class='first identifier id'>first</span><span class='dot token'>.</span><span class='map identifier id'>map</span> <span class='lbrace token'>{</span> <span class='bitor op'>|</span><span class='pos identifier id'>pos</span><span class='bitor op'>|</span> <span class='pos identifier id'>pos</span><span class='dot token'>.</span><span class='to_s identifier id'>to_s</span> <span class='rbrace token'>}</span><span class='dot token'>.</span><span class='uniq identifier id'>uniq</span> 
+  <span class='other_first identifier id'>other_first</span> <span class='assign token'>=</span> <span class='other identifier id'>other</span><span class='dot token'>.</span><span class='parse_tree identifier id'>parse_tree</span><span class='dot token'>.</span><span class='first identifier id'>first</span><span class='dot token'>.</span><span class='map identifier id'>map</span> <span class='lbrace token'>{</span> <span class='bitor op'>|</span><span class='pos identifier id'>pos</span><span class='bitor op'>|</span> <span class='pos identifier id'>pos</span><span class='dot token'>.</span><span class='to_s identifier id'>to_s</span> <span class='rbrace token'>}</span><span class='dot token'>.</span><span class='uniq identifier id'>uniq</span>
+  <span class='return return kw'>return</span> <span class='false false kw'>false</span> <span class='if if_mod kw'>if</span> <span class='first identifier id'>first</span> <span class='neq op'>!=</span> <span class='other_first identifier id'>other_first</span>
+
+  <span class='last identifier id'>last</span> <span class='assign token'>=</span> <span class='@parse_tree ivar id'>@parse_tree</span><span class='dot token'>.</span><span class='last identifier id'>last</span><span class='dot token'>.</span><span class='map identifier id'>map</span> <span class='lbrace token'>{</span> <span class='bitor op'>|</span><span class='pos identifier id'>pos</span><span class='bitor op'>|</span> <span class='pos identifier id'>pos</span><span class='dot token'>.</span><span class='to_s identifier id'>to_s</span> <span class='rbrace token'>}</span><span class='dot token'>.</span><span class='uniq identifier id'>uniq</span> 
+  <span class='other_last identifier id'>other_last</span> <span class='assign token'>=</span> <span class='other identifier id'>other</span><span class='dot token'>.</span><span class='parse_tree identifier id'>parse_tree</span><span class='dot token'>.</span><span class='last identifier id'>last</span><span class='dot token'>.</span><span class='map identifier id'>map</span> <span class='lbrace token'>{</span> <span class='bitor op'>|</span><span class='pos identifier id'>pos</span><span class='bitor op'>|</span> <span class='pos identifier id'>pos</span><span class='dot token'>.</span><span class='to_s identifier id'>to_s</span> <span class='rbrace token'>}</span><span class='dot token'>.</span><span class='uniq identifier id'>uniq</span>
+  <span class='return return kw'>return</span> <span class='false false kw'>false</span> <span class='if if_mod kw'>if</span> <span class='last identifier id'>last</span> <span class='neq op'>!=</span> <span class='other_last identifier id'>other_last</span>
+
+  <span class='to_dfa identifier id'>to_dfa</span> <span class='match op'>=~</span> <span class='other identifier id'>other</span><span class='dot token'>.</span><span class='to_dfa identifier id'>to_dfa</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="star-instance_method">
+  
+    - (<tt>Object</tt>) <strong>star</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the Kleene closure of <tt>self</tt>.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+47
+48
+49</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 47</span>
+
+<span class='def def kw'>def</span> <span class='star identifier id'>star</span>
+  <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RegExp constant id'>RegExp</span><span class='dot token'>.</span><span class='new identifier id'>new</span> <span class='string val'>&quot;(#@string)*&quot;</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="to_dfa-instance_method">
+  
+    - (<tt>Object</tt>) <strong>to_dfa</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Calculates a minimal DFA which represents the same languge as
+<tt>self</tt>.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 52</span>
+
+<span class='def def kw'>def</span> <span class='to_dfa identifier id'>to_dfa</span>
+  <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='DFA constant id'>DFA</span><span class='dot token'>.</span><span class='new identifier id'>new</span><span class='lparen token'>(</span><span class='subset_construction identifier id'>subset_construction</span><span class='rparen token'>)</span><span class='dot token'>.</span><span class='minimize! fid id'>minimize!</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="to_monoid-instance_method">
+  
+    - (<tt>Object</tt>) <strong>to_monoid</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Calculates the syntactic monoid of the represented language.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 62</span>
+
+<span class='def def kw'>def</span> <span class='to_monoid identifier id'>to_monoid</span>
+  <span class='to_dfa identifier id'>to_dfa</span><span class='dot token'>.</span><span class='to_monoid identifier id'>to_monoid</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="to_regexp-instance_method">
+  
+    - (<tt>Object</tt>) <strong>to_regexp</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Simply returns self.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 57</span>
+
+<span class='def def kw'>def</span> <span class='to_regexp identifier id'>to_regexp</span>
+  <span class='self self kw'>self</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="|-instance_method">
+  
+    - (<tt>Object</tt>) <strong>|</strong>(other) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the union of <tt>self</tt> and <tt>other</tt>
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+42
+43
+44</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 42</span>
+
+<span class='def def kw'>def</span> <span class='bitor op'>|</span><span class='lparen token'>(</span><span class='other identifier id'>other</span><span class='rparen token'>)</span>
+  <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RegExp constant id'>RegExp</span><span class='dot token'>.</span><span class='new identifier id'>new</span> <span class='dstring node'>&quot;#@string|#{other.string}&quot;</span>
+<span class='end end kw'>end</span>
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Mon Jul 26 01:17:06 2010 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool">yard</a>
+  0.5.8 (ruby-1.8.7).
+</div>
+
+  </body>
+</html>
