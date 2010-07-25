@@ -5,13 +5,29 @@ RLSM::require_extension 'array'
 RLSM::require_extension 'monoid'
 
 module RLSM
+
+  # Implements the mathematical idea of a finite monoid.
   class Monoid
 
     class << self
+      # Iterates over each monoid of the given order.
+      #
+      # @param [Integer] order Specifies over which monoids the method iterates.
+      #
+      # @raise [RLSMError] The given parameter must be greater than zero.
+      #
+      # @yield [monoid] A monoid of the given order.
       def each(order)
         each_table(order) { |table| yield new(table,false) }
       end
 
+      # Iterates over each transition table of a monoid of the given order.
+      #
+      # @param [Integer] order Specifies over which monoids the method iterates.
+      #
+      # @raise [RLSMError] The given parameter must be greater than zero.
+      #
+      # @yield [table] An array describing the transition table of a monoid.
       def each_table(order)
         raise RLSMError, "Given order must be > 0" if order <= 0
 
@@ -31,13 +47,54 @@ module RLSM
         end
       end
     end
-    
-    attr_accessor :elements, :order, :table
 
+    #The elements of the monoid.
+    attr_reader :elements
+    
+    #The order of the monoid.
+    attr_reader :order
+
+    #The transition table of the monoid.
+    attr_reader :table
+
+    # Creates a new monoid.
+    # @see RLSM::Monoid#initialize
     def self.[](table)
       new(table)
     end
-    
+
+    # Creates a new Monoid from the given table.
+    # The table is interpreted as follows:
+    #
+    # * Case 1: Table is an Array.
+    #
+    #   It is assumed, that the array is flat and that every entry
+    #   is an entry in the transition table. The neutral element must
+    #   be described in the first row and column.
+    #
+    # * Case 2: Table is a String.
+    #
+    #   The string will be parsed into a flat Array.
+    #   If commas are present, the String will be splitted at these,
+    #   otherwise it will be splitted at each character.
+    #   Whitespaces will be ignored or threted as commas.
+    #   After parsing, the resulting array will be treated as in case 1.
+    #
+    # @example Some different ways to create a Monoid
+    #   RLSM::Monoid.new [0,1,1,1]
+    #   RLSM::Monoid.new "0110"
+    #   RLSM::Monoid.new "01 10"
+    #   RLSM::Monoid.new "0,1,1,0"
+    #   RLSM::Monoid.new "0,1 1,0"
+    #
+    # @param [Array,String] table The transition table of the monoid, either as
+    #                             a flat Array or a string.
+    #
+    # @param [Boolean] validate If true, the given table will be validated.
+    #
+    # @raise [RLSMError] If validate is true and the given table isn't
+    #                    associative or has no neutral element or the neutral
+    #                    element isn't in the first row and column.
     def initialize(table, validate = true)
       @table = parse(table)
       @order = Math::sqrt(@table.size).to_i
@@ -69,6 +126,11 @@ module RLSM
       end
     end
 
+    # @private
+    # Parses a transition table description.
+    #
+    # @param [Array,String] table the transition table description.
+    # @return [Array] The parsed description.
     def parse(table)
       return table if Array === table
 
@@ -80,6 +142,9 @@ module RLSM
     end
     
     #Calculates the product of the given elements.
+    # @return The result of the operation
+    # @raise [RLSMError] If at least one of the given elements isn't a element
+    #                    of the monoid or too few elements are given.
     def [](*args)
       case args.size
       when 0,1
@@ -96,7 +161,11 @@ module RLSM
       end
     end
 
-    def to_s # :nodoc:
+    # @private
+    # Transforms monoid into a string.
+    #
+    # @return [String] The string representation of the monoid.
+    def to_s
       result = ""
       sep = @elements.any? { |x| x.to_s.length > 1 } ? ',' : ''
       @table.each_with_index do |el,i|
@@ -111,11 +180,21 @@ module RLSM
       result
     end
 
-    def inspect # :nodoc:
+    # @private
+    # Transforms monoid into a string for debug purposes.
+    #
+    # @return [String] The string representation of the monoid.
+    def inspect
       "<#{self.class}: #{to_s}>"
     end
 
-        #Two monoids are equal if they have the same binary operation on the same set.
+    # Tests for monoid equality. Two monoids are equal if the have the same
+    # set of elements and the same transition table.
+    #
+    # @param [Monoid] other The righthand side of the equality test.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the equality check.
     def ==(other)
       return nil unless RLSM::Monoid === other
 
@@ -123,7 +202,13 @@ module RLSM
         @elements == other.elements
     end
 
-    #Checks if +self+ is a proper submonoid of +other+.
+    # Checks if this monoid is a proper submonoid (i.e. not equal)
+    # of the other one.
+    #
+    # @param [Monoid] other Righthand side of the inequality test.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the inequality test.
     def <(other)
       return nil unless RLSM::Monoid === other
       return false if @order >= other.order
@@ -141,31 +226,77 @@ module RLSM
       true
     end
 
-    #Checks if +self+ is a submonoid of (or equal to) +other+.
+    # Checks if this monoid is a submonoid of the other one.
+    #
+    # @param [Monoid] other Righthand side of the inequality test.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the inequality test.
     def <=(other)
       (self == other) || (self < other)
     end
 
-    def >(other) #:nodoc:
+    # Checks if the other monoid is a proper submonoid (i.e. not equal)
+    # of this one.
+    #
+    # @param [Monoid] other Righthand side of the inequality test.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the inequality test.
+    def >(other)
       other < self
     end
 
-    def >=(other) #:nodoc:
+    # Checks if the other monoid is a submonoid of this one.
+    #
+    # @param [Monoid] other Righthand side of the inequality test.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the inequality test.
+    def >=(other)
       other <= self
       endy
     end
 
+    # @see RLSM::Monoid#isomorph?
+    def =~(other)
+      isomorph?(other)
+    end
 
-    #Returns the submonoid generated by +set+.
+    # Checks if this monoid is isomorph to the other one.
     #
-    #*Remark*: The returned value is only an Array, no Monoid. Use get_submonoid for this.
-    def generated_set(set)
-      if set.include? @elements.first
-        gen_set = set.map { |element| element.to_s }
-      else
-        gen_set = set.map { |element| element.to_s } | @elements[0,1]
-      end
+    # @param [Monoid] other Righthand side of the isomorphism check.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the isomorphism check.
+    def isomorph?(other)
+      return nil unless RLSM::Monoid === other
+      bijective_maps_to(other).any? { |map| isomorphism?(map,other) }
+    end
 
+    # Checks if this monoid is antiisomorph to the other one.
+    #
+    # @param [Monoid] other Righthand side of the isomorphism check.
+    #
+    # @return [nil] if other isn't a monoid.
+    # @return [Boolean] the result of the antiisomorphism check.
+    def antiisomorph?(other)
+      return nil unless RLSM::Monoid === other
+      bijective_maps_to(other).any? { |map| antiisomorphism?(map,other) }
+    end
+
+    # Calculates the set of elements which will be generated by the given set.
+    #
+    # @param [Array] set The elements which act as generators
+    #
+    # @return [Array] the generated set.
+    #
+    # @raise [RLSMError] if one of the elements isn't a monoid element.
+    #
+    # @see RLSM::Monoid#get_submonoid.
+    def generated_set(set)
+      gen_set = set | @elements[0,1]
+      
       unfinished = true
       
       while unfinished
@@ -185,20 +316,33 @@ module RLSM
       gen_set.sort(&element_sorter)
     end
 
-    #Returns the submonoid generated by set.
+    # Calculates the set of elements which will be generated by the given set.
+    #
+    # @param [Array] set The elements which act as generators
+    #
+    # @return [Monoid] the monoid generated by the given set.
+    #
+    # @raise [RLSMError] if one of the elements isn't a monoid element.
+    #
+    # @see RLSM::Monoid#get_generated_set.
     def get_submonoid(set)
       elements = generated_set(set)
 
       set_to_monoid(elements)
     end
 
-    #Returns an array of all submonoids (including the trivial monoid and the monoid itself).
+    # Calculates all submonoids.
+    #
+    # @return [Array] List with all submonoids in it.
     def submonoids
       candidates = get_submonoid_candidates
       candidates.map { |set| set_to_monoid(set) }
     end
 
-    #Returns an array of all proper submonoids. 
+    # Calculates all proper submonoids (i.e. all submonoids without the
+    # monoid itself and the trivial one).
+    #
+    # @return [Array] List with all proper submonoids in it.
     def proper_submonoids
       candidates = get_submonoid_candidates.select do |cand| 
         cand.size > 1 and cand.size < @order 
@@ -207,27 +351,21 @@ module RLSM
       candidates.map { |set| set_to_monoid(set) }
     end
 
-    #Returns the smallest set (first in terms of cardinality, then lexicographically) which generates the monoid.
+    # Finds the smallest set which generates the whole monoid
+    # (smallest in the sense of cardinality of the set).
+    #
+    # @return [Array] A set of elements which generates the whole monoid.
     def generating_subset
       sorted_subsets.find { |set| generated_set(set).size == @order }
     end
 
-    #Checks if +self+ is isomorph to +other+ 
-    def =~(other)
-      bijective_maps_to(other).any? { |map| isomorphism?(map,other) }
-    end
-
-    #Synonym for =~
-    def isomorph?(other)
-      self =~ other
-    end
-
-    #Checks if +self+ is antiisomorph to +other+.
-    def antiisomorph?(other)
-      bijective_maps_to(other).any? { |map| antiisomorphism?(map,other) }
-    end
-
-    #If an argument is given, checks if this element is idempotent. Otherwise checks if the monoid itself is idempotent.
+    # @overload idempotent?
+    # Checks if the monoid is idempotent (i.e. all elements are idempotent).
+    #
+    # @overload idempotent?(element)
+    # Checks if given element is idempotent.
+    #
+    # @return [Boolean] result of the check
     def idempotent?(element = nil)
       if element
         self[element,element] == element
@@ -236,22 +374,46 @@ module RLSM
       end
     end
 
-    #Returns the order of an element.
+    # Calculates the order of the monoid.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Integer] Order of the given element.
     def order_of(element)
       generated_set([element]).size
     end
 
-    #Returns the principal right ideal of the element.
+    # Calculates the principal right ideal of the given element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] Principle right ideal of the given element.
     def right_ideal(element)
       @elements.map { |el| self[element,el] }.uniq.sort(&element_sorter)
     end
 
-    #Returns the principal left ideal of the element.
+    # Calculates the principal left ideal of the given element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] Principle left ideal of the given element.
     def left_ideal(element)
       @elements.map { |el| self[el,element] }.uniq.sort(&element_sorter)
     end
 
-    #Returns the principal (twosided) ideal of the element.
+    # Calculates the principal (twosided) ideal of the given element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] Principle ideal of the given element.
     def ideal(element)
       result = []
       @elements.each do |el1|
@@ -263,17 +425,33 @@ module RLSM
       result.uniq.sort(&element_sorter)
     end
 
-    #Returns the neutral element of the monoid.
+    # The neutral element of the monoid.
+    #
+    # @return neutral element of the monoid.
     def identity
       @elements.first
     end
 
-    #Checks if +element+ is the neutral element.
+    # Checks if given element is the neutral element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @return [Boolean] Result of the check.
     def identity?(element)
       element == identity
     end
 
-    #If a argument is given, checks if +element+ is the zero element. If no arguement is given, checks if a zero element exists.
+    # @overload zero?
+    # Checks if the monoid has a zero element.
+    #
+    # @overload zero?(element)
+    # Checks if the given element is the zero element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if element isn't a monoid element
+    #
+    # @return [Boolean] Result of the check.
     def zero?(element = nil)
       if element
         return false if @order == 1
@@ -285,140 +463,173 @@ module RLSM
       end
     end
 
-    #Returns the zero element if it exists. Return +nil+ if no zero element exists.
+    # Calculates the zero element of the monoid (if it exists).
+    #
+    # @return [nil] if the monoid has no zero element
+    # @return [Object] the zero element
     def zero
       @elements.find { |el| zero?(el) }
     end
 
-    #Checks if +element+ is a left zero element.
+    # Checks if the given element is a left zero element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if element isn't a monoid element
+    #
+    # @return [Boolean] Result of the check.
     def left_zero?(element)
       return false if @order == 1
       @elements.all? { |x| self[element,x] == element }
     end
 
-    #Checks if +element+ is a right zero element.
+    # Checks if the given element is a right zero element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if element isn't a monoid element
+    #
+    # @return [Boolean] Result of the check.
     def right_zero?(element)
       return false if @order == 1
       @elements.all? { |x| self[x,element] == element }
     end
 
-    #Returns an array with all right zero elements.
+    # Calculates all right zero elements of the monoid.
+    #
+    # @return [Array] the right zero elements of the monoid.
     def right_zeros
       @elements.select { |el| right_zero?(el) }
     end
 
-    #Returns an array with all left zero elements.
+    # Calculates all left zero elements of the monoid.
+    #
+    # @return [Array] the left zero elements of the monoid.
     def left_zeros
       @elements.select { |el| left_zero?(el) }
     end
 
-    #Returns an array with all idempotent elements.
+    # Calculates all idempotent elements of the monoid.
+    #
+    # @return [Array] the idempotent elements of the monoid.
     def idempotents
       @elements.select { |el| idempotent?(el) }
     end
 
-    #Checks if the monoid is a group.
+    # Checks if the monoid is a group.
+    #
+    # @return [Boolean] Result of the check.
     def group?
       idempotents.size == 1
     end
 
-    #Checks if the monoid is commutative.
+    # Checks if the monoid is commutative.
+    #
+    # @return [Boolean] Result of the check.
     def commutative?
       is_commutative
     end
 
-    #Checks if the monoid is monogenic, i.e it is generated by a single element.
+    # Checks if the monoid is monogenic (i.e. generated by a single element).
+    #
+    # @return [Boolean] Result of the check.
     def monogenic?
       generating_subset.size == 1
     end
 
-    #Calculates the L-class of an element.
+    # Calculates the L-class of an element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] L-class of the given element.
     def l_class(element)
       li = left_ideal(element)
       @elements.select { |el| left_ideal(el) == li }
     end
 
-    #Calculates the R-class of an element.
+    # Calculates the R-class of an element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] R-class of the given element.
     def r_class(element)
       r = right_ideal(element)
       @elements.select { |el| right_ideal(el) == r }
     end
 
-    #Calculates the J-class of an element.
+    # Calculates the J-class of an element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] J-class of the given element.
     def j_class(element)
       d = ideal(element)
       @elements.select { |el| ideal(el) == d }
     end
 
-    #Calculates the H-class of an element.
+    # Calculates the H-class of an element.
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] H-class of the given element.
     def h_class(element)
       l_class(element) & r_class(element)
     end
-
-    #Synonym for j_class (in a finite monoid the J and D relation are the same).
+    
+    # Calculates the D-class of an element.
+    # Synonym for j_class (J and D relation are the same for a finite monoid).
+    #
+    # @param element An element of the monoid.
+    #
+    # @raise [RLSMError] if the element isn't a monoid element.
+    #
+    # @return [Array] D-class of the given element.
     def d_class(element)
       j_class(element)
     end
 
-    #Synonym for h_trivial?.
+    %w(j l r h d).each do |type|
+      define_method(type + "_classes") do 
+        not_tested = @elements.dup
+        classes = []
+
+        until not_tested.empty?
+          classes << self.send((type + '_class').to_sym, not_tested.first)
+          not_tested = not_tested.reject { |el| classes.last.include? el }
+        end
+
+        classes.sort(&subset_sorter)
+      end
+
+      define_method(type + "_trivial?") do
+        @elements.all? { |el| self.send((type + '_class').to_sym, el).size == 1}
+      end
+    end
+          
+    # Checks if the monoid is aperiodic (i.e. H-trivial).
+    #
+    # @return [Boolean] Result of the check.
+    #
+    # @see RLSM::Monoid#h_trivial?
     def aperiodic?
       h_trivial?
     end
 
-    ##
-    # :method: l_classes
-    # Returns all L-classes of the monoid.
-
-    ##
-    # :method: r_classes
-    # Returns all R-classes of the monoid.
-
-    ##
-    # :method: j_classes
-    # Returns all J-classes of the monoid.
-
-    ##
-    # :method: h_classes
-    # Returns all H-classes of the monoid.
-
-    ##
-    # :method: d_classes
-    # Returns all D-classes of the monoid.
-
-    ##
-    # :method: l_trivial?
-    # Checks if all L-classes consist of one element.
-
-    ##
-    # :method: r_trivial?
-    # Checks if all R-classes consist of one element.
-
-    ##
-    # :method: j_trivial?
-    # Checks if all J-classes consist of one element.
-
-    ##
-    # :method: h_trivial?
-    # Checks if all H-classes consist of one element.
-
-    ##
-    # :method: d_trivial?
-    # Checks if all D-classes consist of one element.
-
-    ##
-    # Method missing magic...
-    def method_missing(name) #:nodoc:
-      case name.to_s
-      when /([jlrhd])_classes/
-        green_classes($1)
-      when /([jlrhd])_trivial?/
-        green_trivial?($1)
-      else
-        super
-      end
-    end
-
-    #Checks if the given set is a disjunctive subset.
+    # Checks if the given set is a disjunctive subset.
+    #
+    # @param [Array] set A set of monoid elements
+    #
+    # @raise [RLSMError] If one of the given elements isn't a monoid element.
+    #
+    # @return [Boolean] Result of the check.
     def subset_disjunctive?(set)
       tupels = []
       @elements.each do |el1|
@@ -434,17 +645,24 @@ module RLSM
       end
     end
 
-    #Returns a disjunctive subset if any exists. Returns +nil+ otherwise.
+    # Calculate a disjunctive subset if one exists.
+    #
+    # @return [nil] if no disjunctive subset exists.
+    # @return [Array] a disjunctive subset.
     def disjunctive_subset
       RLSM::ArrayExt::powerset(@elements).find { |s| subset_disjunctive? s }
     end
 
-    #Returns an array with all disjunctive subsets.
+    # Calculate all disjunctive subsets.
+    #
+    # @return [Array] all disjunctive subsets.
     def all_disjunctive_subsets
       RLSM::ArrayExt::powerset(@elements).select { |s| subset_disjunctive? s }
     end
 
-    #Checks if the monoid is syntactic, i.e. if it has a disjunctive subset.
+    # Checks if the monoid is syntactic, i.e. if it has a disjunctive subset.
+    #
+    # @return [Boolean] Result of the check.
     def syntactic?
       !!disjunctive_subset
     end
@@ -484,7 +702,15 @@ module RLSM
       RLSM::DFA.new string   
     end
 
-
+    # @overload regular?
+    # Checks if the monoid is regular.
+    #
+    # @overload regular?(a)
+    # Checks if given element is regular.
+    #
+    # @param a an element of the monoid
+    # @raise [RLSMError] if given element isn't a monoid element.
+    # @return [Boolean] Result of the check.
     def regular?(a=nil)
       if a.nil?
         @elements.all? { |x| regular?(x) }
@@ -493,6 +719,9 @@ module RLSM
       end
     end
 
+    # Checks if the monoid is inverse.
+    #
+    # @return [Boolean] Result of the check.
     def inverse?
       regular? and
         idempotents.all? { |x| idempotents.all? { |y| self[x,y] == self[y,x] } }
@@ -567,20 +796,5 @@ module RLSM
       true
     end
 
-    def green_classes(type)
-      not_tested = @elements.dup
-      classes = []
-
-      until not_tested.empty?
-        classes << self.send((type + '_class').to_sym, not_tested.first)
-	not_tested = not_tested.reject { |el| classes.last.include? el }
-      end
-
-      classes.sort(&subset_sorter)
-    end
-
-    def green_trivial?(type)
-      @elements.all? { |el| self.send((type + '_class').to_sym, el).size == 1 }
-    end
   end   # of class Monoid
 end     # of module RLSM
