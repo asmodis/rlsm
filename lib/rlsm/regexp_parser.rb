@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__), 'helper')
 
 module RLSM
+  # @private
   module RE #:nodoc:
     module ParserHelpers #:nodoc:
       OpenBracket = '('

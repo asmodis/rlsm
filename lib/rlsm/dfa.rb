@@ -6,6 +6,7 @@ RLSM::require_extension('array')
 require "strscan"
 
 module RLSM
+  # @private
   class DFA
     #Synonym for new.
     def self.[](description)

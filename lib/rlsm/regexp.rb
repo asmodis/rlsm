@@ -3,6 +3,7 @@ require File.join(File.dirname(__FILE__), 'regexp_parser')
 require File.join(File.dirname(__FILE__), 'dfa')
 
 module RLSM
+  # @private
   class RegExp
     #Returns a RegExp which is the empty word.
     def self.empty_word
