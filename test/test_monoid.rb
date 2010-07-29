@@ -49,41 +49,41 @@ context "Creation of a monoid:" do
   end
 
   test "Monoid::new : Should reject an empty description." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "" ]
     end
   end
 
   test "Monoid::new : Should reject a description with only whitespaces." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ " \t\n" ]
     end
   end
   
   test "Monoid::new : Description should describe a quadratic matrix." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "012 120 20" ]
     end
   end
 
   test "Monoid::new : Described n x n - matrix should contain n symbols." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "123 456 789" ]
     end
 
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "000 000 000" ]
     end
   end
 
   test "Monoid::new : Identity should be first row and column." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "00 01" ]
     end
   end
 
   test "Monoid::new : Described monoid should be associative." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "012 100 200" ]
     end
   end
@@ -96,7 +96,7 @@ context "Creation of a monoid:" do
   end
 
   test "Monoid::new : Column seperators must either be used or not in a row." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       RLSM::Monoid[ "0,12 120 201" ]
     end
   end
@@ -116,11 +116,11 @@ context "Multiplication of elements:" do
   end
 
   test "Monoid#[] : Should require at least two arguments." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       @monoid["2"]
     end
 
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       @monoid[]
     end
   end
@@ -134,7 +134,7 @@ context "Multiplication of elements:" do
 
   
   test "Monoid#[] : Should raise BinOpError for unknown elements." do
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       @monoid["1","3"]
     end
   end
@@ -201,7 +201,7 @@ context "Generating submonoids:" do
   test "Monoid#generated_set : Should raise BinOpError for unknown elements." do
     m1 = RLSM::Monoid[ "0123 1203 2013 3333" ]
 
-    assert_raises RLSMError do
+    assert_raises RLSM::Error do
       m1.generated_set(["4"])
     end
   end

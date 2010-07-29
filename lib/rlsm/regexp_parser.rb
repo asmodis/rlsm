@@ -119,7 +119,7 @@ module RLSM
         end
 
         if unbalanced_brackets?(input)
-          raise RegExpError, "Parse Error: Unbalanced brackets."
+          raise RLSM::Error, "Parse Error: Unbalanced brackets."
         end
         
         parse(input)      

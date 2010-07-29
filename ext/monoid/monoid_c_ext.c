@@ -255,7 +255,7 @@ e_pos(VALUE self, VALUE table, VALUE rorder) {
   int i, order = NUM2INT(rorder);
   for(i=0; i < order; ++i) {
     if (NUM2INT(RARRAY_PTR(table)[i]) != i || NUM2INT(RARRAY_PTR(table)[order*i]) != i) {
-      rb_raise(rb_const_get(rb_cObject, rb_intern("RLSMError")), "Neutral element isn't in first row.");
+      rb_raise(rb_const_get(rb_define_module("RLSM"), rb_intern("Error")), "Neutral element isn't in first row.");
     }
   }
 

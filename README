@@ -1,19 +1,16 @@
 = rlsm
 rlsm stands for *R*egular *L*anguages and *S*yntactic *M*onoids.
 
-Source is availible from
-  http://github.com/asmodis/rlsm
-
-RDoc-Documentation is availible from
-  http://rlsm.rubyforge.org
+Source is availible from http://github.com/asmodis/rlsm.
 
 == DESCRIPTION:
+Monoids play a large role in the theory of formal languages, especially in the 
+theory of regular languages. If +L+ is a regular language, there exists a finite monoid, 
+the so called syntactic monoid of +L+, and it is possible to get more informations about 
+the language by investigating properties of the monoid. On the other hand one is 
+interessted in the question which monoids are syntactic.
 
-This is a ruby implementation of three concepts:
- - Deterministic Finite Automata
- - Regular Expressions (in the sense of theoretical computer sience)
- - Monoids
-
+The rlsm gem allows the study of both questions.
 
 == SYNOPSIS:
 
@@ -23,6 +20,9 @@ This is a ruby implementation of three concepts:
   m.syntactic? # => true
   m.isomorph_to?(m) # => true
   m.commutative? # => false
+
+  m2 = RLSM::Monoid.from_regexp("ab*")
+  m2.aperiodic?
 
 == INSTALL:
 

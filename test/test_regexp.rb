@@ -19,11 +19,11 @@ context "Parsing of a regexp:" do
   end
 
   test "RegExp::new : Should check that parentheses are balanced." do
-    assert_raises RegExpError do
+    assert_raises RLSM::Error do
       RLSM::RegExp.new "(ab(cUd)"
     end
 
-    assert_raises RegExpError do
+    assert_raises RLSM::Error do
       RLSM::RegExp.new "ab)((cUd)"
     end
   end

@@ -14,7 +14,7 @@ module RLSM
       #
       # @param [Integer] order Specifies over which monoids the method iterates.
       #
-      # @raise [RLSMError] The given parameter must be greater than zero.
+      # @raise [RLSM::Error] The given parameter must be greater than zero.
       #
       # @yield [monoid] A monoid of the given order.
       def each(order)
@@ -25,11 +25,11 @@ module RLSM
       #
       # @param [Integer] order Specifies over which monoids the method iterates.
       #
-      # @raise [RLSMError] The given parameter must be greater than zero.
+      # @raise [RLSM::Error] The given parameter must be greater than zero.
       #
       # @yield [table] An array describing the transition table of a monoid.
       def each_table(order)
-        raise RLSMError, "Given order must be > 0" if order <= 0
+        raise RLSM::Error, "Given order must be > 0" if order <= 0
 
         if order == 1  #trivial case
           yield [0]
@@ -46,6 +46,35 @@ module RLSM
           end
         end
       end
+
+      # Creates a new monoid.
+      # @see RLSM::Monoid#initialize
+      def [](table)
+        new(table)
+      end
+
+      # Creates the syntactic monoid to the given regular language.
+      #
+      # @param [String] regexp a regular expression.
+      #
+      # @raise [RLSM::Error] if given string isn't a valid regexp.
+      #
+      # @return [Monoid] the syntactic monoid of the given regular language.
+      def from_regexp(regexp)
+        RLSM::RE[regexp].to_monoid
+      end
+
+      # Creates the syntactic monoid to the given regular language.
+      #
+      # @param [String] dfa a deterministic finite automaton
+      #
+      # @raise [RLSM::Error] if given string isn't a valid DFA description.
+      #
+      # @return [Monoid] the syntactic monoid of the given regular language.
+      def from_dfa(dfa)
+        RLSM::DFA[dfa].to_monoid
+      end
+
     end
 
     #The elements of the monoid.
@@ -56,12 +85,6 @@ module RLSM
 
     #The transition table of the monoid.
     attr_reader :table
-
-    # Creates a new monoid.
-    # @see RLSM::Monoid#initialize
-    def self.[](table)
-      new(table)
-    end
 
     # Creates a new Monoid from the given table.
     # The table is interpreted as follows:
@@ -92,7 +115,7 @@ module RLSM
     #
     # @param [Boolean] validate If true, the given table will be validated.
     #
-    # @raise [RLSMError] If validate is true and the given table isn't
+    # @raise [RLSM::Error] If validate is true and the given table isn't
     #                    associative or has no neutral element or the neutral
     #                    element isn't in the first row and column.
     def initialize(table, validate = true)
@@ -105,15 +128,15 @@ module RLSM
 
       if validate
         if @order == 0
-          raise RLSMError, "No elements given."
+          raise RLSM::Error, "No elements given."
         end
         
         unless @table.size == @order**2
-          raise RLSMError, "Binary operation must be quadratic."
+          raise RLSM::Error, "Binary operation must be quadratic."
         end
 
         unless @table.uniq.size == @order
-          raise RLSMError, "Number of different elements is wrong."
+          raise RLSM::Error, "Number of different elements is wrong."
         end
 
         enforce_identity_position(@table, @order)
@@ -121,7 +144,7 @@ module RLSM
         nat = non_associative_triple
         unless nat.nil?
           err_str = "(#{nat[0]}#{nat[0]})#{nat[0]} != #{nat[0]}(#{nat[1]}#{nat[2]})"
-          raise RLSMError, "Associativity required, but #{err_str}."
+          raise RLSM::Error, "Associativity required, but #{err_str}."
         end
       end
     end
@@ -143,17 +166,17 @@ module RLSM
     
     #Calculates the product of the given elements.
     # @return The result of the operation
-    # @raise [RLSMError] If at least one of the given elements isn't a element
+    # @raise [RLSM::Error] If at least one of the given elements isn't a element
     #                    of the monoid or too few elements are given.
     def [](*args)
       case args.size
       when 0,1
-        raise RLSMError, "At least two elements must be provided."
+        raise RLSM::Error, "At least two elements must be provided."
       when 2
         begin
           @elements[ @table[ @order*@internal[args[0]] + @internal[args[1]] ] ]
         rescue
-          raise RLSMError, "Given arguments aren't monoid elements."
+          raise RLSM::Error, "Given arguments aren't monoid elements."
         end
       else
         args[0,2] = self[ *args[0,2] ]
@@ -217,7 +240,7 @@ module RLSM
         @elements.each do |e2|
           begin
             return false if self[e1,e2] != other[e1,e2]
-          rescue RLSMError
+          rescue RLSM::Error
             return false
           end
         end
@@ -296,7 +319,7 @@ module RLSM
     #
     # @return [Array] the generated set.
     #
-    # @raise [RLSMError] if one of the elements isn't a monoid element.
+    # @raise [RLSM::Error] if one of the elements isn't a monoid element.
     #
     # @see RLSM::Monoid#get_submonoid.
     def generated_set(set)
@@ -327,7 +350,7 @@ module RLSM
     #
     # @return [Monoid] the monoid generated by the given set.
     #
-    # @raise [RLSMError] if one of the elements isn't a monoid element.
+    # @raise [RLSM::Error] if one of the elements isn't a monoid element.
     #
     # @see RLSM::Monoid#get_generated_set.
     def get_submonoid(set)
@@ -383,7 +406,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Integer] Order of the given element.
     def order_of(element)
@@ -394,7 +417,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] Principle right ideal of the given element.
     def right_ideal(element)
@@ -405,7 +428,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] Principle left ideal of the given element.
     def left_ideal(element)
@@ -416,7 +439,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] Principle ideal of the given element.
     def ideal(element)
@@ -454,7 +477,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if element isn't a monoid element
+    # @raise [RLSM::Error] if element isn't a monoid element
     #
     # @return [Boolean] Result of the check.
     def zero?(element = nil)
@@ -480,7 +503,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if element isn't a monoid element
+    # @raise [RLSM::Error] if element isn't a monoid element
     #
     # @return [Boolean] Result of the check.
     def left_zero?(element)
@@ -492,7 +515,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if element isn't a monoid element
+    # @raise [RLSM::Error] if element isn't a monoid element
     #
     # @return [Boolean] Result of the check.
     def right_zero?(element)
@@ -546,7 +569,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] L-class of the given element.
     def l_class(element)
@@ -558,7 +581,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] R-class of the given element.
     def r_class(element)
@@ -570,7 +593,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] J-class of the given element.
     def j_class(element)
@@ -582,7 +605,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] H-class of the given element.
     def h_class(element)
@@ -594,7 +617,7 @@ module RLSM
     #
     # @param element An element of the monoid.
     #
-    # @raise [RLSMError] if the element isn't a monoid element.
+    # @raise [RLSM::Error] if the element isn't a monoid element.
     #
     # @return [Array] D-class of the given element.
     def d_class(element)
@@ -716,7 +739,7 @@ module RLSM
     #
     # @param [Array] set A set of monoid elements
     #
-    # @raise [RLSMError] If one of the given elements isn't a monoid element.
+    # @raise [RLSM::Error] If one of the given elements isn't a monoid element.
     #
     # @return [Boolean] Result of the check.
     def subset_disjunctive?(set)
@@ -756,12 +779,37 @@ module RLSM
       !!disjunctive_subset
     end
 
-    #Returns a regular expression which represents a language with a syntactic monoid isomorph to +self+.
-    def to_regexp
-      to_dfa.to_regexp
+    # Transforms the monoid to a regexp which has this monoid as its syntactic
+    # monoid. Each disjunctive subset may yield a different language.
+    # If no argument is given, the smallest disjunctive subset is used.
+    #
+    # @raise [RLSM::Error] If given set isn't a disjunctive subset or the monoid
+    #                      isn't syntactic.
+    #
+    # @param [Array] set A disjunctive subset of the monoid.
+    #
+    # @return [RLSM::RegExp] A regular expression which has this monoi as the
+    #                        syntactic monoid.
+    def to_regexp(set = nil)
+      unless syntactic?
+        raise RLSM::Error, "Only syntactic monoids may be transformed to regexp"
+      end
+      
+      to_dfa(set).to_regexp
     end
 
-    #Returns a DFA which represents a language with a syntactic monoid isomorph to +self+.
+    # Transform this monoid into a minimal DFA, which has this monoid as
+    # transition monoid.
+    #
+    # @param [Array] finals The set of final states in the resulting DFA.
+    #                Must be a disjunctive subset. If no subset is given,
+    #                the smallest disjunctive subset is used.
+    #
+    # @raise [RLSM::Error] If given set isn't a disjunctive subset of the monoid
+    #                      or the monoid isn't syntactic.
+    #
+    # @return [RLSM::DFA] A minimal DFA which has this monoid as its transition
+    #                     monoid.
     def to_dfa(finals = nil)
       finals = finals || disjunctive_subset || []
 
@@ -793,7 +841,7 @@ module RLSM
     # Checks if given element is regular.
     #
     # @param a an element of the monoid
-    # @raise [RLSMError] if given element isn't a monoid element.
+    # @raise [RLSM::Error] if given element isn't a monoid element.
     # @return [Boolean] Result of the check.
     def regular?(a=nil)
       if a.nil?
@@ -814,8 +862,8 @@ module RLSM
 
     # Transforms a given subset of the elements to a submonoid.
     #
-    # @raise [RLSMError] if set isn't a subset of the monoid elements or the set
-    #                    isn't a submonoid.
+    # @raise [RLSM::Error] if set isn't a subset of the monoid elements or the
+    #                      set isn't a submonoid.
     # @return [Monoid] the submonoid formed by the given set.
     def set_to_monoid(set)
       description = set.map do |el1|

@@ -11,7 +11,7 @@ context "Parsing the description of a DFA." do
   end
   
   test "The empty string is not accepted" do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new ""
     end
   end
@@ -23,13 +23,13 @@ context "Parsing the description of a DFA." do
   end
 
   test "The description must include an initial state indicator." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "s1"
     end
   end
 
   test "The description may not include more than one initial state." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1-a->}s2"
     end
   end
@@ -41,29 +41,29 @@ context "Parsing the description of a DFA." do
   end
 
   test "A transition arrow must have a starting dash." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 a-> s2"
     end
   end
 
   test "A transition arrow must have a closing arrow." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 -a> s2"
     end
 
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 -a- s2"
     end
   end
 
   test "A transition must have at least one label." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 --> s2"
     end
   end
 
   test "Multiple labels must be seperated by a comma." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 -a;b-> s2"
     end
   end
@@ -75,13 +75,13 @@ context "Parsing the description of a DFA." do
   end
 
   test "A transition must start with a state." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new " -a-> }s2"
     end
   end
 
   test "A transition must end with a state." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 -a-> "
     end
   end
@@ -139,7 +139,7 @@ context "Creation of a DFA." do
   end
 
   test "Transition labels out from one state must be unique" do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new "}s1 -a-> s2 s1-a->s3"
     end
   end
@@ -207,11 +207,11 @@ context "Properties of a state" do
 
   test "Arguments for state properties must be states of the DFA." do
     dfa = RLSM::DFA.new "}s1"
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       dfa.dead? "s3"
     end
 
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       dfa.reachable? "s3"
     end
   end
@@ -382,7 +382,7 @@ context "Accepting of words, transition monoid" do
   end
 
   test "Requesting a transition from a nonexistant state." do
-    assert_raises DFAError do
+    assert_raises RLSM::Error do
       RLSM::DFA.new("}s1")['s2', 'a']
     end
   end

@@ -66,7 +66,7 @@ module RLSM
     #Processes given +string+ starting in state +state+.
     def [](state, string)
       unless @states.include?(state)
-        raise DFAError, "Unknown state: #{state}"
+        raise RLSM::Error, "Unknown state: #{state}"
       end
 
       present_state = state
@@ -93,7 +93,7 @@ module RLSM
 
     #Checks if given +state+ is dead, i.e. its not a final state and it hs no outgoing transitions.
     def dead?(state)
-      raise DFAError, "Unknown state: #{state}" unless @states.include?(state)
+      raise RLSM::Error, "Unknown state: #{state}" unless @states.include?(state)
       
       state != @initial_state and
         ! @final_states.include?(state) and
@@ -102,7 +102,7 @@ module RLSM
 
     #Checks if given +state+ is reachable, i.e. it exists a +string+, such that <tt>self << string == state</tt> is true.
     def reachable?(state)
-      raise DFAError, "Unknown state: #{state}" unless @states.include?(state)
+      raise RLSM::Error, "Unknown state: #{state}" unless @states.include?(state)
 
       reachable_states.include? state
     end
@@ -392,7 +392,7 @@ module RLSM
 
     def parse_initial_state(description)
       unless description.count('}') == 1
-        raise DFAError, "None or at least two initial states."
+        raise RLSM::Error, "None or at least two initial states."
       end
 
       @initial_state = description[/\}\s*\*?(\w+)/,1]
@@ -437,14 +437,14 @@ module RLSM
         elsif parser.scan(/\w+/)
           #do nothing (states already parsed)
         else
-          raise DFAError, "Parse Error, could not parse #{description}"
+          raise RLSM::Error, "Parse Error, could not parse #{description}"
         end
           
         break unless parser.scan(/ /)
       end
 
       unless parser.eos?
-        raise DFAError, "Parse Error, could not parse #{description}"
+        raise RLSM::Error, "Parse Error, could not parse #{description}"
       end
       
       @alphabet = @alphabet.sort
@@ -467,7 +467,7 @@ module RLSM
         if trans[label].nil?
           trans[label] = destination
         elsif trans[label] != destination
-          raise DFAError, "Parse Error: Transition labels must be uniq."
+          raise RLSM::Error, "Parse Error: Transition labels must be uniq."
         end
       end
     end
