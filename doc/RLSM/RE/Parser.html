@@ -186,7 +186,6 @@
       <pre class="lines">
 
 
-114
 115
 116
 117
@@ -197,10 +196,11 @@
 122
 123
 124
-125</pre>
+125
+126</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp_parser.rb', line 114</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp_parser.rb', line 115</span>
 
 <span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='lbrack token'>[</span><span class='rbrack token'>]</span><span class='lparen token'>(</span><span class='string identifier id'>string</span><span class='rparen token'>)</span>
   <span class='index identifier id'>index</span> <span class='assign token'>=</span> <span class='integer val'>-1</span>
@@ -209,7 +209,7 @@
   <span class='end end kw'>end</span>
 
   <span class='if if kw'>if</span> <span class='unbalanced_brackets? fid id'>unbalanced_brackets?</span><span class='lparen token'>(</span><span class='input identifier id'>input</span><span class='rparen token'>)</span>
-    <span class='raise identifier id'>raise</span> <span class='RegExpError constant id'>RegExpError</span><span class='comma token'>,</span> <span class='string val'>&quot;Parse Error: Unbalanced brackets.&quot;</span>
+    <span class='raise identifier id'>raise</span> <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='Error constant id'>Error</span><span class='comma token'>,</span> <span class='string val'>&quot;Parse Error: Unbalanced brackets.&quot;</span>
   <span class='end end kw'>end</span>
   
   <span class='parse identifier id'>parse</span><span class='lparen token'>(</span><span class='input identifier id'>input</span><span class='rparen token'>)</span>      
@@ -233,7 +233,6 @@
       <pre class="lines">
 
 
-127
 128
 129
 130
@@ -249,10 +248,11 @@
 140
 141
 142
-143</pre>
+143
+144</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp_parser.rb', line 127</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp_parser.rb', line 128</span>
 
 <span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='parse identifier id'>parse</span><span class='lparen token'>(</span><span class='input identifier id'>input</span><span class='rparen token'>)</span>
   <span class='input identifier id'>input</span> <span class='assign token'>=</span> <span class='remove_surrounding_brackets identifier id'>remove_surrounding_brackets</span><span class='lparen token'>(</span><span class='input identifier id'>input</span><span class='rparen token'>)</span>
@@ -282,7 +282,7 @@
 </div>
     
     <div id="footer">
-  Generated on Mon Jul 26 01:17:07 2010 by 
+  Generated on Thu Jul 29 12:13:01 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool">yard</a>
   0.5.8 (ruby-1.8.7).
 </div>

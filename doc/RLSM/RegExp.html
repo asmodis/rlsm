@@ -79,7 +79,15 @@
 </dl>
 <div class="clear"></div>
 
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
 
+  </div>
+</div>
+<div class="tags">
+  
+</div>
 
   <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
   <ul class="summary">
@@ -478,13 +486,13 @@ language.
       <pre class="lines">
 
 
-29
 30
 31
-32</pre>
+32
+33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 29</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 30</span>
 
 <span class='def def kw'>def</span> <span class='initialize identifier id'>initialize</span><span class='lparen token'>(</span><span class='description identifier id'>description</span><span class='rparen token'>)</span>
   <span class='@parse_tree ivar id'>@parse_tree</span> <span class='assign token'>=</span> <span class='RE constant id'>RE</span><span class='colon2 op'>::</span><span class='Parser constant id'>Parser</span><span class='lbrack token'>[</span> <span class='description identifier id'>description</span> <span class='rbrack token'>]</span>
@@ -528,12 +536,12 @@ Returns the value of attribute parse_tree
       <pre class="lines">
 
 
-34
 35
-36</pre>
+36
+37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 35</span>
 
 <span class='def def kw'>def</span> <span class='parse_tree identifier id'>parse_tree</span>
   <span class='@parse_tree ivar id'>@parse_tree</span>
@@ -571,12 +579,12 @@ Returns the value of attribute string
       <pre class="lines">
 
 
-34
 35
-36</pre>
+36
+37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 35</span>
 
 <span class='def def kw'>def</span> <span class='string identifier id'>string</span>
   <span class='@string ivar id'>@string</span>
@@ -618,12 +626,12 @@ Synonym for new.
       <pre class="lines">
 
 
-18
 19
-20</pre>
+20
+21</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 19</span>
 
 <span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='lbrack token'>[</span><span class='rbrack token'>]</span><span class='lparen token'>(</span><span class='description identifier id'>description</span><span class='rparen token'>)</span>
   <span class='new identifier id'>new</span><span class='lparen token'>(</span><span class='description identifier id'>description</span><span class='rparen token'>)</span>
@@ -658,12 +666,12 @@ Returns a RegExp which represents the empty language.
       <pre class="lines">
 
 
-13
 14
-15</pre>
+15
+16</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 13</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 14</span>
 
 <span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='empty_set identifier id'>empty_set</span>
   <span class='new identifier id'>new</span> <span class='string val'>''</span>
@@ -698,12 +706,12 @@ Returns a RegExp which is the empty word.
       <pre class="lines">
 
 
-8
 9
-10</pre>
+10
+11</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 8</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 9</span>
 
 <span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='empty_word identifier id'>empty_word</span>
   <span class='new identifier id'>new</span> <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RE constant id'>RE</span><span class='colon2 op'>::</span><span class='ParserHelpers constant id'>ParserHelpers</span><span class='colon2 op'>::</span><span class='EmptyWordSymbol constant id'>EmptyWordSymbol</span>
@@ -744,12 +752,12 @@ Concatenate <tt>self</tt> with <tt>other</tt>.
       <pre class="lines">
 
 
-37
 38
-39</pre>
+39
+40</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 37</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 38</span>
 
 <span class='def def kw'>def</span> <span class='plus op'>+</span><span class='lparen token'>(</span><span class='other identifier id'>other</span><span class='rparen token'>)</span>
   <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RegExp constant id'>RegExp</span><span class='dot token'>.</span><span class='new identifier id'>new</span> <span class='dstring node'>&quot;(#@string)(#{other.string})&quot;</span>
@@ -785,7 +793,6 @@ same language.
       <pre class="lines">
 
 
-67
 68
 69
 70
@@ -797,10 +804,11 @@ same language.
 76
 77
 78
-79</pre>
+79
+80</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 67</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 68</span>
 
 <span class='def def kw'>def</span> <span class='eq op'>==</span><span class='lparen token'>(</span><span class='other identifier id'>other</span><span class='rparen token'>)</span>
   <span class='return return kw'>return</span> <span class='true true kw'>true</span> <span class='if if_mod kw'>if</span> <span class='@string ivar id'>@string</span> <span class='eq op'>==</span> <span class='other identifier id'>other</span><span class='dot token'>.</span><span class='string identifier id'>string</span>
@@ -845,12 +853,12 @@ Returns the Kleene closure of <tt>self</tt>.
       <pre class="lines">
 
 
-47
 48
-49</pre>
+49
+50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 47</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 48</span>
 
 <span class='def def kw'>def</span> <span class='star identifier id'>star</span>
   <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RegExp constant id'>RegExp</span><span class='dot token'>.</span><span class='new identifier id'>new</span> <span class='string val'>&quot;(#@string)*&quot;</span>
@@ -886,12 +894,12 @@ Calculates a minimal DFA which represents the same languge as
       <pre class="lines">
 
 
-52
 53
-54</pre>
+54
+55</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 53</span>
 
 <span class='def def kw'>def</span> <span class='to_dfa identifier id'>to_dfa</span>
   <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='DFA constant id'>DFA</span><span class='dot token'>.</span><span class='new identifier id'>new</span><span class='lparen token'>(</span><span class='subset_construction identifier id'>subset_construction</span><span class='rparen token'>)</span><span class='dot token'>.</span><span class='minimize! fid id'>minimize!</span>
@@ -926,12 +934,12 @@ Calculates the syntactic monoid of the represented language.
       <pre class="lines">
 
 
-62
 63
-64</pre>
+64
+65</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 63</span>
 
 <span class='def def kw'>def</span> <span class='to_monoid identifier id'>to_monoid</span>
   <span class='to_dfa identifier id'>to_dfa</span><span class='dot token'>.</span><span class='to_monoid identifier id'>to_monoid</span>
@@ -966,12 +974,12 @@ Simply returns self.
       <pre class="lines">
 
 
-57
 58
-59</pre>
+59
+60</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 57</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 58</span>
 
 <span class='def def kw'>def</span> <span class='to_regexp identifier id'>to_regexp</span>
   <span class='self self kw'>self</span>
@@ -1006,12 +1014,12 @@ Returns the union of <tt>self</tt> and <tt>other</tt>
       <pre class="lines">
 
 
-42
 43
-44</pre>
+44
+45</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 42</span>
+      <pre class="code"><span class="info file"># File 'lib/rlsm/regexp.rb', line 43</span>
 
 <span class='def def kw'>def</span> <span class='bitor op'>|</span><span class='lparen token'>(</span><span class='other identifier id'>other</span><span class='rparen token'>)</span>
   <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='RegExp constant id'>RegExp</span><span class='dot token'>.</span><span class='new identifier id'>new</span> <span class='dstring node'>&quot;#@string|#{other.string}&quot;</span>
@@ -1027,7 +1035,7 @@ Returns the union of <tt>self</tt> and <tt>other</tt>
 </div>
     
     <div id="footer">
-  Generated on Mon Jul 26 01:17:06 2010 by 
+  Generated on Thu Jul 29 12:12:58 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool">yard</a>
   0.5.8 (ruby-1.8.7).
 </div>

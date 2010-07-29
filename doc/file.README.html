@@ -46,26 +46,21 @@
 rlsm stands for *R*egular *L*anguages and *S*yntactic *M*onoids.
 </p>
 <p>
-Source is availible from
+Source is availible from <a
+href="http://github.com/asmodis/rlsm">github.com/asmodis/rlsm</a>.
 </p>
-<pre class="code">
-  <span class='http identifier id'>http</span><span class='symbol val'>:/</span><span class='regexp val'>/github.com/</span><span class='asmodis identifier id'>asmodis</span><span class='div op'>/</span><span class='rlsm identifier id'>rlsm</span>
-</pre>
-<p>
-RDoc-Documentation is availible from
-</p>
-<pre class="code">
-  <span class='http identifier id'>http</span><span class='symbol val'>:/</span><span class='regexp val'>/rlsm.rubyforge.org
-</span></pre>
 <h2>DESCRIPTION:</h2>
 <p>
-This is a ruby implementation of three concepts:
+Monoids play a large role in the theory of formal languages, especially in
+the  theory of regular languages. If <tt>L</tt> is a regular language,
+there exists a finite monoid,  the so called syntactic monoid of
+<tt>L</tt>, and it is possible to get more informations about  the language
+by investigating properties of the monoid. On the other hand one is 
+interessted in the question which monoids are syntactic.
 </p>
-<pre class="code">
- <span class='minus op'>-</span> <span class='Deterministic constant id'>Deterministic</span> <span class='Finite constant id'>Finite</span> <span class='Automata constant id'>Automata</span>
- <span class='minus op'>-</span> <span class='Regular constant id'>Regular</span> <span class='Expressions constant id'>Expressions</span> <span class='lparen token'>(</span><span class='in in kw'>in</span> <span class='the identifier id'>the</span> <span class='sense identifier id'>sense</span> <span class='of identifier id'>of</span> <span class='theoretical identifier id'>theoretical</span> <span class='computer identifier id'>computer</span> <span class='sience identifier id'>sience</span><span class='rparen token'>)</span>
- <span class='minus op'>-</span> <span class='Monoids constant id'>Monoids</span>
-</pre>
+<p>
+The rlsm gem allows the study of both questions.
+</p>
 <h2>SYNOPSIS:</h2>
 <pre class="code">
   <span class='require identifier id'>require</span> <span class='string val'>'rlsm'</span>
@@ -74,6 +69,9 @@ This is a ruby implementation of three concepts:
   <span class='m identifier id'>m</span><span class='dot token'>.</span><span class='syntactic? fid id'>syntactic?</span> <span class='comment val'># =&gt; true</span>
   <span class='m identifier id'>m</span><span class='dot token'>.</span><span class='isomorph_to? fid id'>isomorph_to?</span><span class='lparen token'>(</span><span class='m identifier id'>m</span><span class='rparen token'>)</span> <span class='comment val'># =&gt; true</span>
   <span class='m identifier id'>m</span><span class='dot token'>.</span><span class='commutative? fid id'>commutative?</span> <span class='comment val'># =&gt; false</span>
+
+  <span class='m2 identifier id'>m2</span> <span class='assign token'>=</span> <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='Monoid constant id'>Monoid</span><span class='dot token'>.</span><span class='from_regexp identifier id'>from_regexp</span><span class='lparen token'>(</span><span class='string val'>&quot;ab*&quot;</span><span class='rparen token'>)</span>
+  <span class='m2 identifier id'>m2</span><span class='dot token'>.</span><span class='aperiodic? fid id'>aperiodic?</span>
 </pre>
 <h2>INSTALL:</h2>
 <pre class="code">
@@ -111,7 +109,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 </div></div>
     
     <div id="footer">
-  Generated on Mon Jul 26 01:17:01 2010 by 
+  Generated on Thu Jul 29 16:02:34 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool">yard</a>
   0.5.8 (ruby-1.8.7).
 </div>

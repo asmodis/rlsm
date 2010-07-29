@@ -3,16 +3,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta name="Content-Type" content="text/html; charset=utf-8" />
-<title>Exception: MonoidError</title>
-<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
-<link rel="stylesheet" href="css/common.css" type="text/css" media="screen" charset="utf-8" />
+<title>Exception: RLSM::Error</title>
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="../css/common.css" type="text/css" media="screen" charset="utf-8" />
 
 <script type="text/javascript" charset="utf-8">
-  relpath = '';
+  relpath = '..';
   if (relpath != '') relpath += '/';
 </script>
-<script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
-<script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
 
   </head>
   <body>
@@ -23,10 +23,10 @@
     <div id="header">
       <div id="menu">
   
-    <a href="_index.html">Index (M)</a> &raquo; 
-    
-    
-    <span class="title">MonoidError</span>
+    <a href="../_index.html">Index (E)</a> &raquo; 
+    <span class='title'><a href="../RLSM.html" title="RLSM (module)">RLSM</a></span>
+     &raquo; 
+    <span class="title">Error</span>
   
   
   <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
@@ -43,7 +43,7 @@
     
     <iframe id="search_frame"></iframe>
     
-    <div id="content"><h1>Exception: MonoidError
+    <div id="content"><h1>Exception: RLSM::Error
   
   
   
@@ -53,16 +53,14 @@
   
     <dt class="r1">Inherits:</dt>
     <dd class="r1">
-      <span class="inheritName"><a href="RLSMError.html" title="RLSMError (class)">RLSMError</a></span>
+      <span class="inheritName">StandardError</span>
       
         <ul class="fullTree">
           <li>Object</li>
           
             <li class="next">StandardError</li>
           
-            <li class="next"><a href="RLSMError.html" title="RLSMError (class)">RLSMError</a></li>
-          
-            <li class="next">MonoidError</li>
+            <li class="next">RLSM::Error</li>
           
         </ul>
         <a href="#" class="inheritanceTree">show all</a>
@@ -86,7 +84,20 @@
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
     <p>
-:nodoc:
+The exception class which is raised by the code under the RLSM module. So
+somthing like
+</p>
+<pre class="code">
+   <span class='begin begin kw'>begin</span>
+     <span class='dot3 op'>...</span>
+   <span class='rescue rescue kw'>rescue</span> <span class='RLSM constant id'>RLSM</span><span class='colon2 op'>::</span><span class='Error constant id'>Error</span> <span class='assign token'>=</span><span class='gt op'>&gt;</span> <span class='e identifier id'>e</span>
+     <span class='dot3 op'>...</span> <span class='comment val'>#Error from RLSM code</span>
+   <span class='rescue rescue kw'>rescue</span>
+     <span class='dot3 op'>...</span> <span class='comment val'>#Some external error</span>
+   <span class='end end kw'>end</span>
+</pre>
+<p>
+works.
 </p>
 
 
@@ -97,23 +108,14 @@
 </div>
 
   
-  
-  
-  
-  
 
 
-  
-  
-  
-  
-  
   
 
 </div>
     
     <div id="footer">
-  Generated on Mon Jul 26 01:17:06 2010 by 
+  Generated on Thu Jul 29 16:02:34 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool">yard</a>
   0.5.8 (ruby-1.8.7).
 </div>
