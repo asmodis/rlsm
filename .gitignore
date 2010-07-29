@@ -4,3 +4,4 @@ ext/**/*.so
 gem
 doc
 .yardoc
+.yardoc/*
