@@ -7,3 +7,4 @@ doc
 .yardoc/*
 .yardoc/**/*
 .yardoc/**/**/*
+.yardoc/**/**/**/*
