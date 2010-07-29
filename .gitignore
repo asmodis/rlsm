@@ -2,10 +2,5 @@ ext/**/Makefile
 ext/**/*.o
 ext/**/*.so
 gem
-doc
-.yardoc
-.yardoc/*
-.yardoc/**/*
-.yardoc/**/**/*
-.yardoc/**/**/**/*
-.yardoc/**/**/**/**/*
+doc/
+.yardoc/
