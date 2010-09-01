@@ -1,5 +1,5 @@
 module RLSM
-  VERSION = "1.1.0"
+  VERSION = "1.8.0"
 
   def self.lib_path_to(file_name)
     File.join(File.dirname(__FILE__), 'rlsm', file_name)
